@@ -1,6 +1,6 @@
 # Installing Tunnela on Windows x64
 
-Tunnela is an independent wrapper for the TrustTunnel engine. Installation uses a single NSIS 3.13 EXE package: `.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe`. This is an unsigned preview. Build results and verification status are recorded separately in [BUILD-STATUS.md](BUILD-STATUS.md); these instructions alone do not establish release readiness. The user performs installation, UAC approval, VPN operation, and reboot tests.
+Tunnela is an independent wrapper for the TrustTunnel engine. Installation uses a single NSIS 3.13 EXE package: `.artifacts\installer\Tunnela-0.1.0-preview.3-Setup-x64.exe`. This is an unsigned preview. Build results and verification status are recorded separately in [BUILD-STATUS.md](BUILD-STATUS.md); these instructions alone do not establish release readiness. The user performs installation, UAC approval, VPN operation, and reboot tests.
 
 Tunnela has its own names and directories. An existing TrustTunnel client, its service, and its data are not automatically migrated, deleted, or stopped. You can inspect the Tunnela interface without connecting alongside an existing client. Before a real network test, manually disconnect the existing VPN and confirm that its tunnel has stopped; simultaneous VPN connections are not tested.
 
@@ -10,7 +10,7 @@ Follow these steps after confirming the package build. You do not need to remove
 
 1. Save profile changes. In Tunnela, choose **Disconnect** and wait for confirmation. Then choose **Close interface…** from the tray. Close every Tunnela GUI instance, including copies started from the working directory. Closing only the interface does not disconnect the VPN, so the order matters.
 2. For a first installation, identify the ordinary Windows account that will control Tunnela. Run `whoami` in a normal PowerShell session to obtain its name. The installer asks for an explicit account name in `DOMAIN\user` or `COMPUTER\user` format. If UAC uses another administrator's credentials, the controller must still be your ordinary account. Updating an existing installation retains its saved controller SID.
-3. Run `Tunnela-0.1.0-preview.2-Setup-x64.exe` and approve UAC. The package contains the application, service, .NET runtime, TrustTunnel engine, and Wintun; installation requires neither component downloads nor a separate .NET installation.
+3. Run `Tunnela-0.1.0-preview.3-Setup-x64.exe` and approve UAC. The package contains the application, service, .NET runtime, TrustTunnel engine, and Wintun; installation requires neither component downloads nor a separate .NET installation.
 4. Files are installed under `%ProgramFiles%\Tunnela`. The `Tunnela` service (`Tunnela VPN Service`) runs as LocalSystem, uses **Automatic** startup, and starts idle, waiting for a command. Installation and Windows startup do not automatically connect the VPN.
 5. Open Tunnela from the Start menu under the ordinary controller account, without elevation. Expect an available service and existing profiles from `%LOCALAPPDATA%\Tunnela\profiles.dat`. No profile connects automatically. Check the selected server and rules before connecting manually.
 6. After the basic check, manually disconnect the VPN and restart Windows. Expect the service to start automatically and remain idle; after opening the GUI from Start, the same user should retain control, and the VPN should remain disconnected until requested.
@@ -27,7 +27,7 @@ The NSIS **3.13** compiler is kept inside the project at `.tools\nsis-3.13\maken
 .\scripts\build-installer.ps1
 ```
 
-The first script prepares the local .NET 10.0.401 SDK; this step is required in a fresh checkout. The second prepares the pinned portable NSIS compiler. `build-installer.ps1` checks the compiler, automatically prepares the pinned engine files through `prepare-engine.ps1`, and builds `.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe`. It uses fresh, isolated publish output to avoid replacing a running GUI copy in the main publish directory.
+The first script prepares the local .NET 10.0.401 SDK; this step is required in a fresh checkout. The second prepares the pinned portable NSIS compiler. `build-installer.ps1` checks the compiler, automatically prepares the pinned engine files through `prepare-engine.ps1`, and builds `.artifacts\installer\Tunnela-0.1.0-preview.3-Setup-x64.exe`. It uses fresh, isolated publish output to avoid replacing a running GUI copy in the main publish directory.
 
 The package includes Tunnela's MIT license and licenses for TrustTunnel, Wintun, Tomlyn, and the included .NET runtime components. Tunnela's license is also copied to `licenses/TUNNELA_LICENSE.txt` in standalone Desktop and Service build/publish output. Preparing the SDK, compiler, and engine, and restoring build dependencies may require internet access; installing the completed EXE does not download components.
 

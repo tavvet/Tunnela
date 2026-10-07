@@ -9,14 +9,18 @@ namespace Tunnela.Service;
 internal sealed class EngineSupervisor
 {
     private readonly InstallConfiguration _installation;
+    // _commands serializes lifecycle changes across awaits. Output, exit and timeout observers
+    // run independently; _stateLock protects their short shared-state updates, never an await.
     private readonly object _stateLock = new();
     private readonly SemaphoreSlim _commands = new(1, 1);
     private readonly Queue<DiagnosticEntry> _logs = new();
+    // Owning a process is separate from a confirmed VPN connection in _snapshot.
     private ConsoleEngineProcess? _engine;
     private Task _exitTask = Task.CompletedTask;
     private TunnelSnapshot _snapshot;
     private bool _stopRequested;
-    private bool _signalDelivered;
+    // Tracks the one-shot stop guard, not proof of signal delivery or process exit.
+    private bool _stopSignalAttempted;
     private bool _ownershipBlocked;
     private bool _shuttingDown;
 
@@ -29,7 +33,7 @@ internal sealed class EngineSupervisor
             _engine = ConsoleEngineProcess.TryRecover();
             if (_engine is not null)
             {
-                _signalDelivered = _engine.Record.StopSignalAttempted;
+                _stopSignalAttempted = _engine.Record.StopSignalAttempted;
                 _snapshot = _snapshot with
                 {
                     State = TunnelState.Unknown,
@@ -127,7 +131,7 @@ internal sealed class EngineSupervisor
                 {
                     _engine = engine;
                     _stopRequested = false;
-                    _signalDelivered = false;
+                    _stopSignalAttempted = false;
                     _snapshot = new TunnelSnapshot
                     {
                         State = TunnelState.Connecting,
@@ -184,7 +188,7 @@ internal sealed class EngineSupervisor
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             try
             {
-                if (!exitTask.IsCompleted && !_signalDelivered)
+                if (!exitTask.IsCompleted && !_stopSignalAttempted)
                 {
                     // Trusted executable; no elevation, shell, or user-selected arguments.
                     var start = new ProcessStartInfo(Path.Combine(InstallConfiguration.InstallDirectory, "Tunnela.Service.exe"))
@@ -202,7 +206,7 @@ internal sealed class EngineSupervisor
                         SetStopFailure(engine, "EngineSignalFailed", "Service.EngineSignalFailed");
                         return new("Service.EngineSignalFailed");
                     }
-                    if (helper.ExitCode == 0) _signalDelivered = true;
+                    if (helper.ExitCode == 0) _stopSignalAttempted = true;
                 }
                 await exitTask.WaitAsync(timeout.Token);
                 return null;
@@ -272,6 +276,8 @@ internal sealed class EngineSupervisor
         if (state is null) return; // Raw output is intentionally discarded, never retained or sent to the GUI.
         lock (_stateLock)
         {
+            // Late output from an older session, or output during our stop request, must not
+            // overwrite the current session's state. Other observers use the same identity guard.
             if (_engine != engine || _stopRequested) return;
             var messageCode = state switch
             {

@@ -2,6 +2,14 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
+## Readability refactor verification — 0.1.0-preview.3, October 7, 2026
+
+- After publication of `v0.1.0-preview.2`, C# readability work separated tray ownership, report formatting, and profile editing into focused classes. Comments explain dispatcher and shutdown guards, service synchronization, process ownership, IPC authentication, encrypted replacement writes, and wire-format semantics. The compact XAML layout and IPC/profile formats are unchanged.
+- The Release build completed with 0 warnings and 0 errors. All 98 isolated tests passed, with 0 skipped: 79 Core and 19 Desktop. Eight new report cases cover saved and draft value redaction, case-insensitive matching, empty values, English report formatting, the Russian language switch, and malformed drafts using synthetic data.
+- Review found that preparing an empty report eagerly converted drafts, so a stored profile with a null name could trigger an exception even without diagnostic messages. Profile values are now collected only when the first message needs redaction. Three regression cases failed before this fix and passed afterward: empty reports in both languages avoid draft conversion, while a nonempty report still fails if redaction values cannot be prepared.
+- Source review compared the refactor with the published baseline, including tray callback scheduling, close guards, property-notification order, and protected file writes. The [source map](ARCHITECTURE.md#reading-the-c-code) explains where to start reading.
+- The application, tray, installed service, and VPN were not launched during this work. The [focused manual regression steps](TESTING.md#after-the-readability-refactor) remain pending for a fresh build. The build script now targets `0.1.0-preview.3` (Windows file version `0.1.0.3`), but that installer has not been built or tested. The existing `0.1.0-preview.2` installer described below was not rebuilt and does not contain this refactor; installer assertions were not rerun because packaging behavior is unchanged.
+
 ## Current revision
 
 - The Tunnela product name is applied to the solution, projects, executables, service, IPC, tray, and data directories. The application has its own icon.
@@ -19,7 +27,7 @@ Baseline verification date: October 6, 2026. Documentation and language work: Oc
 
 ## EXE installer and pending scenarios
 
-- The current installer output is `.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe`, containing the language update. It was built on October 7, 2026, and the user subsequently reported that the localized version works. This does not establish that the full installer or network acceptance plan was repeated. The earlier installation results below describe the previously verified `0.1.0-preview.1` baseline; failure and edge-case checks remain pending as listed below.
+- The most recently built installer is `.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe`, containing the language update. It was built on October 7, 2026, and the user subsequently reported that the localized version works. This does not establish that the full installer or network acceptance plan was repeated. The earlier installation results below describe the previously verified `0.1.0-preview.1` baseline; failure and edge-case checks remain pending as listed below.
 - An unsigned `.artifacts\installer\Tunnela-0.1.0-preview.1-Setup-x64.exe` package of approximately 54 MiB was built. It includes freshly published Desktop/Service output, self-contained .NET, TrustTunnel 1.1.7, Wintun 0.14.1, and licenses. NSIS 3.13 is located only in `.tools\nsis-3.13`; no global tool installation was performed.
 - The installer has Russian and English wizard languages, a Start menu shortcut, and uninstallation through Windows Settings. The service uses Automatic startup and waits for a manual connection command. Updates preserve the existing controller SID; the first installation asks the user to confirm their ordinary Windows account.
 - Implemented behavior includes preserving profiles, refusing an active GUI or Tunnela tunnel before stopping the service, protected temporary directories, validating the complete payload, and rolling back files/service settings on failure. Isolation from an existing TrustTunnel client is retained.

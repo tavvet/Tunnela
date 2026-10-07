@@ -39,11 +39,11 @@ internal sealed record InstallConfiguration
         ProtectedFiles.CheckNoReparsePoints(InstallDirectory);
         for (var directory = new DirectoryInfo(InstallDirectory); directory is not null; directory = directory.Parent)
         {
-            ProtectedFiles.RequireAdministratorWriteOnly(directory);
+            ProtectedFiles.RequireProtectedAcl(directory);
             if (string.Equals(directory.FullName, programFiles, StringComparison.OrdinalIgnoreCase)) break;
         }
         var configFile = new FileInfo(Path.Combine(InstallDirectory, "service-install.json"));
-        ProtectedFiles.RequireAdministratorWriteOnly(configFile);
+        ProtectedFiles.RequireProtectedAcl(configFile);
         if (configFile.Length > 8192)
         {
             throw new InvalidDataException(Messages.GetEnglish("Service.InstallConfigTooLarge"));
@@ -71,7 +71,7 @@ internal sealed record InstallConfiguration
         try
         {
             ProtectedFiles.CheckNoReparsePoints(Path.GetDirectoryName(EnginePath)!);
-            ProtectedFiles.RequireAdministratorWriteOnly(new DirectoryInfo(Path.GetDirectoryName(EnginePath)!));
+            ProtectedFiles.RequireProtectedAcl(new DirectoryInfo(Path.GetDirectoryName(EnginePath)!));
             return VerifyFile(EnginePath, EngineSha256) && VerifyFile(WintunPath, WintunSha256);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or SystemException)
@@ -83,7 +83,7 @@ internal sealed record InstallConfiguration
     private static bool VerifyFile(string path, string expected)
     {
         var file = new FileInfo(path);
-        ProtectedFiles.RequireAdministratorWriteOnly(file);
+        ProtectedFiles.RequireProtectedAcl(file);
         using var stream = file.OpenRead();
         return CryptographicOperations.FixedTimeEquals(SHA256.HashData(stream), Convert.FromHexString(expected));
     }
@@ -113,7 +113,11 @@ internal static class ProtectedFiles
         }
     }
 
-    internal static void RequireAdministratorWriteOnly(FileSystemInfo info)
+    // Require a trusted owner and reject every applicable write grant to an untrusted SID.
+    // This is a conservative policy check, not an effective-permissions calculation: a Deny rule
+    // does not excuse an unsafe Allow rule. Read access is permitted; ownership is checked separately
+    // because an untrusted owner could change the DACL even without an existing write grant.
+    internal static void RequireProtectedAcl(FileSystemInfo info)
     {
         if (!info.Exists || (info.Attributes & FileAttributes.ReparsePoint) != 0)
         {
@@ -164,7 +168,7 @@ internal static class ProtectedFiles
     internal static void WriteSecret(string path, string content)
     {
         CheckNoReparsePoints(InstallConfiguration.RuntimeDirectory);
-        RequireAdministratorWriteOnly(new DirectoryInfo(InstallConfiguration.RuntimeDirectory));
+        RequireProtectedAcl(new DirectoryInfo(InstallConfiguration.RuntimeDirectory));
         var temporary = Path.Combine(InstallConfiguration.RuntimeDirectory, Guid.NewGuid().ToString("N") + ".tmp");
         try
         {

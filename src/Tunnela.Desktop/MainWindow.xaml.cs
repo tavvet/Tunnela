@@ -1,15 +1,14 @@
-using Tunnela.Desktop.Localization;
 using System.ComponentModel;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using Tunnela.Contracts;
 using Tunnela.Core;
-using Forms = System.Windows.Forms;
+using Tunnela.Desktop.Localization;
 
 namespace Tunnela.Desktop;
 
@@ -18,21 +17,26 @@ public partial class MainWindow : Window
     private readonly UiModel _model = new();
     private readonly ProfileStore _store = new();
     private readonly ServiceClient _client = new();
+    // Polling skips a busy gate; explicit commands wait for the previous request to finish.
     private readonly SemaphoreSlim _serviceGate = new(1, 1);
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(5) };
     private readonly CancellationTokenSource _lifetime = new();
-    private readonly Forms.NotifyIcon _tray;
-    private readonly System.Drawing.Icon _trayIcon;
-    private readonly Forms.ContextMenuStrip _trayMenu;
-    private readonly Forms.ToolStripMenuItem _trayConnection;
-    private readonly Forms.ToolStripMenuItem _trayExit;
-    private readonly Forms.ToolStripItem _trayOpen;
-    private readonly Forms.ToolStripItem _trayCloseInterface;
+    private readonly TrayController _tray;
     private ProfileCollection _collection = new();
     private List<DiagnosticEntry> _logEntries = [];
     private bool _changingLanguage;
+    private bool _storageReadOnly;
+    private bool _syncPassword;
+    private bool _trayHintShown;
+    private bool _initialized;
+
+    // Exit is asynchronous: request disconnection, confirm the result, then permit WPF to close.
+    // A modal prompt pumps dispatcher messages, so its guard is separate from the pending command.
+    private bool _exitPending;
+    private bool _exitPromptOpen;
     private TaskCompletionSource? _exitPromptClosed;
-    private bool _storageReadOnly, _syncPassword, _allowClose, _exitPending, _exitPromptOpen, _closed, _trayHintShown, _initialized;
+    private bool _allowClose; // Bypasses Window_Closing only after an exit path has been accepted.
+    private bool _closed; // Makes callbacks that finish after resource disposal harmless.
 
     public MainWindow(ProfileCollection? initialCollection)
     {
@@ -44,41 +48,38 @@ public partial class MainWindow : Window
         Height = Math.Min(Height, workArea.Height - 32);
         DataContext = _model;
         _model.PropertyChanged += Model_PropertyChanged;
-        using var iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Assets/Tunnela.ico"))?.Stream
-            ?? throw new InvalidOperationException(Text.Get("IconMissing"));
-        using var sourceIcon = new System.Drawing.Icon(iconStream);
-        _trayIcon = (System.Drawing.Icon)sourceIcon.Clone();
-        _tray = new Forms.NotifyIcon { Icon = _trayIcon, Text = Text.Get("TrayUnknown"), Visible = true };
-        _trayMenu = new Forms.ContextMenuStrip();
-        _trayOpen = _trayMenu.Items.Add(Text.Get("TrayOpen"), null, (_, _) => QueueTrayAction(ShowFromTray));
-        _trayConnection = new Forms.ToolStripMenuItem(Text.Get("Connect"));
-        _trayConnection.Click += (_, _) => QueueTrayAction(async () => { ShowFromTray(); await ToggleConnectionAsync(); });
-        _trayMenu.Items.Add(_trayConnection);
-        _trayMenu.Items.Add(new Forms.ToolStripSeparator());
-        _trayExit = new Forms.ToolStripMenuItem(Text.Get("TrayExit"));
-        _trayExit.Click += (_, _) => QueueTrayAction(async () => await ExitAsync());
-        _trayMenu.Items.Add(_trayExit);
-        _trayCloseInterface = _trayMenu.Items.Add(Text.Get("TrayCloseInterface"), null, (_, _) => QueueTrayAction(CloseInterface));
-        _tray.ContextMenuStrip = _trayMenu;
-        _tray.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) QueueTrayAction(ShowFromTray); };
-        _tray.MouseDoubleClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) QueueTrayAction(ShowFromTray); };
-        _tray.BalloonTipClicked += (_, _) => QueueTrayAction(ShowFromTray);
+        _tray = new TrayController(
+            open: () => QueueTrayAction(ShowFromTray),
+            toggleConnection: () => QueueTrayAction(async () =>
+            {
+                ShowFromTray();
+                await ToggleConnectionAsync();
+            }),
+            exit: () => QueueTrayAction(async () => await ExitAsync()),
+            closeInterface: () => QueueTrayAction(CloseInterface));
         UpdateTray();
         LoadProfiles(initialCollection);
         _timer.Tick += async (_, _) => await RefreshAsync();
-        Loaded += async (_, _) => { if (_initialized) return; _initialized = true; _timer.Start(); await RefreshAsync(); };
-        Closed += (_, _) =>
-        {
-            _closed = true;
-            _timer.Stop();
-            _lifetime.Cancel();
-            _tray.Visible = false;
-            _tray.Dispose();
-            _trayMenu.Dispose();
-            _trayIcon.Dispose();
-            _lifetime.Dispose();
-            System.Windows.Application.Current.Shutdown();
-        };
+        Loaded += Window_Loaded;
+        Closed += Window_Closed;
+    }
+
+    private async void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (_initialized) return;
+        _initialized = true;
+        _timer.Start();
+        await RefreshAsync();
+    }
+
+    private void Window_Closed(object? sender, EventArgs e)
+    {
+        _closed = true;
+        _timer.Stop();
+        _lifetime.Cancel();
+        _tray.Dispose();
+        _lifetime.Dispose();
+        System.Windows.Application.Current.Shutdown();
     }
 
     private void Model_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -132,7 +133,10 @@ public partial class MainWindow : Window
             UpdateTray();
             _model.Notice = Text.Get("LanguageSaved");
         }
-        finally { _changingLanguage = false; }
+        finally
+        {
+            _changingLanguage = false;
+        }
     }
 
     private static string ErrorText(ServiceResponse response, string fallbackKey) =>
@@ -142,7 +146,10 @@ public partial class MainWindow : Window
     private void QueueTrayAction(Action action)
     {
         if (_closed || Dispatcher.HasShutdownStarted) return;
-        _ = Dispatcher.BeginInvoke(new Action(() => { if (!_closed && !_exitPromptOpen) action(); }));
+        _ = Dispatcher.BeginInvoke(new Action(() =>
+        {
+            if (!_closed && !_exitPromptOpen) action();
+        }));
     }
 
     private void ShowFromTray()
@@ -165,22 +172,29 @@ public partial class MainWindow : Window
             if (!response.Success) _model.Notice = ErrorText(response, "StatusFailed");
         }
         catch (OperationCanceledException) when (_closed) { }
-        catch (ServiceUnavailableException exception) { if (!_closed) _model.Unavailable(exception.MessageKey); }
-        catch { if (!_closed) _model.Unavailable(); }
-        finally { UpdateTray(); _serviceGate.Release(); }
+        catch (ServiceUnavailableException exception)
+        {
+            if (!_closed) _model.Unavailable(exception.MessageKey);
+        }
+        catch
+        {
+            if (!_closed) _model.Unavailable();
+        }
+        finally
+        {
+            UpdateTray();
+            _serviceGate.Release();
+        }
     }
 
     private void UpdateTray()
     {
         if (_closed) return;
-        string status = "Tunnela — " + _model.StatusTitle;
-        _tray.Text = status.Length > 63 ? status[..63] : status;
-        _trayConnection.Text = _model.ConnectText;
-        _trayOpen.Text = Text.Get("TrayOpen");
-        _trayCloseInterface.Text = Text.Get("TrayCloseInterface");
-        _trayExit.Text = Text.Get("TrayExit");
-        _trayConnection.Enabled = !_model.IsBusy && !_exitPending && _model.ServiceAvailable;
-        _trayExit.Enabled = !_model.IsBusy && !_exitPending;
+        _tray.Update(
+            _model.StatusTitle,
+            _model.ConnectText,
+            canToggleConnection: !_model.IsBusy && !_exitPending && _model.ServiceAvailable,
+            canExit: !_model.IsBusy && !_exitPending);
     }
 
     private async Task RunServiceActionAsync(Func<Task> action)
@@ -188,7 +202,10 @@ public partial class MainWindow : Window
         if (_closed || _model.IsBusy) return;
         _model.IsBusy = true;
         await _serviceGate.WaitAsync();
-        try { if (!_closed) await action(); }
+        try
+        {
+            if (!_closed) await action();
+        }
         catch (OperationCanceledException) when (_closed) { }
         catch (ServiceUnavailableException exception)
         {
@@ -208,7 +225,12 @@ public partial class MainWindow : Window
             _model.Unavailable();
             _model.Notice = Text.Get("ServiceNoResponse");
         }
-        finally { UpdateTray(); _model.IsBusy = false; _serviceGate.Release(); }
+        finally
+        {
+            UpdateTray();
+            _model.IsBusy = false;
+            _serviceGate.Release();
+        }
     }
 
     private async Task ToggleConnectionAsync()
@@ -219,13 +241,29 @@ public partial class MainWindow : Window
             var actual = await _client.SendAsync("status", cancellationToken: _lifetime.Token);
             if (_closed) return;
             _model.Apply(actual.Snapshot);
-            if (!actual.Success) { _model.Notice = ErrorText(actual, "ServiceNotReady"); return; }
-            bool active = actual.Snapshot.ProcessId.HasValue || actual.Snapshot.State is TunnelState.Connected or TunnelState.Connecting or TunnelState.Reconnecting or TunnelState.Disconnecting;
-            if (!active && actual.Snapshot.State == TunnelState.Unknown) { _model.Notice = Text.Get("RefreshUnknownStatus"); return; }
+            if (!actual.Success)
+            {
+                _model.Notice = ErrorText(actual, "ServiceNotReady");
+                return;
+            }
+
+            // A live process must be stopped even if the engine has not confirmed a VPN connection.
+            bool active = actual.Snapshot.ProcessId.HasValue || actual.Snapshot.State is
+                TunnelState.Connected or TunnelState.Connecting or TunnelState.Reconnecting or TunnelState.Disconnecting;
+            if (!active && actual.Snapshot.State == TunnelState.Unknown)
+            {
+                _model.Notice = Text.Get("RefreshUnknownStatus");
+                return;
+            }
             ServerProfile? profile = null;
             if (!active)
             {
-                if (_model.Selected is null) { _model.Page = 1; _model.Notice = Text.Get("SelectServer"); return; }
+                if (_model.Selected is null)
+                {
+                    _model.Page = 1;
+                    _model.Notice = Text.Get("SelectServer");
+                    return;
+                }
                 if (!TrySaveSelected()) return;
                 profile = _model.Selected.Source;
             }
@@ -233,18 +271,38 @@ public partial class MainWindow : Window
             var result = await _client.SendAsync(active ? "disconnect" : "connect", profile, _lifetime.Token);
             if (_closed) return;
             _model.Apply(result.Snapshot);
-            _model.Notice = result.Success ? (active ? Text.Get("DisconnectCompleted") : Text.Get("ConnectRequested")) : ErrorText(result, "CommandRejected");
+            _model.Notice = result.Success
+                ? Text.Get(active ? "DisconnectCompleted" : "ConnectRequested")
+                : ErrorText(result, "CommandRejected");
         });
     }
 
     private bool Persist(ProfileCollection next)
     {
-        if (_storageReadOnly) { _model.Notice = Text.Get("StorageReadOnly"); return false; }
-        try { _store.Save(next); _collection = next; return true; }
-        catch { _model.Notice = Text.Get("SaveFailed"); return false; }
+        if (_storageReadOnly)
+        {
+            _model.Notice = Text.Get("StorageReadOnly");
+            return false;
+        }
+        try
+        {
+            _store.Save(next);
+            _collection = next;
+            return true;
+        }
+        catch
+        {
+            _model.Notice = Text.Get("SaveFailed");
+            return false;
+        }
     }
 
-    private AppPreferences CurrentPreferences() => _collection.Preferences with { SelectedProfileId = _model.Selected?.Id, MinimizeToTray = _model.MinimizeToTray, Language = _model.Language };
+    private AppPreferences CurrentPreferences() => _collection.Preferences with
+    {
+        SelectedProfileId = _model.Selected?.Id,
+        MinimizeToTray = _model.MinimizeToTray,
+        Language = _model.Language
+    };
 
     private bool TrySaveSelected()
     {
@@ -254,16 +312,30 @@ public partial class MainWindow : Window
         {
             profile = selected.ToProfile();
             var errors = Text.InCurrentLanguage(() => ProfileValidator.Validate(profile));
-            if (errors.Count > 0) { _model.Notice = string.Join(" ", errors); return false; }
+            if (errors.Count > 0)
+            {
+                _model.Notice = string.Join(" ", errors);
+                return false;
+            }
             byte[] command = JsonSerializer.SerializeToUtf8Bytes(new ServiceRequest { Command = "connect", Profile = profile });
             try
             {
                 if (command.Length + 1 > ServiceProtocol.MaxMessageBytes)
-                { _model.Notice = Text.Get("ProfileTooLarge"); return false; }
+                {
+                    _model.Notice = Text.Get("ProfileTooLarge");
+                    return false;
+                }
             }
-            finally { CryptographicOperations.ZeroMemory(command); }
+            finally
+            {
+                CryptographicOperations.ZeroMemory(command);
+            }
         }
-        catch { _model.Notice = Text.Get("InvalidProfile"); return false; }
+        catch
+        {
+            _model.Notice = Text.Get("InvalidProfile");
+            return false;
+        }
         var profiles = _collection.Profiles.Where(p => p.Id != profile.Id).Append(profile).ToList();
         if (!Persist(_collection with { Profiles = profiles, Preferences = CurrentPreferences() })) return false;
         selected.MarkSaved(profile);
@@ -274,7 +346,8 @@ public partial class MainWindow : Window
     private void Add_Click(object sender, RoutedEventArgs e)
     {
         var draft = new ProfileEditor(new ServerProfile { Name = Text.Get("NewConnection") }, true);
-        _model.Profiles.Add(draft); _model.Selected = draft;
+        _model.Profiles.Add(draft);
+        _model.Selected = draft;
         _model.Notice = Text.Get("FillServerHint");
     }
 
@@ -287,12 +360,17 @@ public partial class MainWindow : Window
     private void Delete_Click(object sender, RoutedEventArgs e)
     {
         if (_model.Selected is not { } selected) return;
-        if (_model.Snapshot.ProfileId == selected.Id && (_model.Snapshot.ProcessId.HasValue || _model.Snapshot.State is TunnelState.Connecting or TunnelState.Connected or TunnelState.Reconnecting))
-        { _model.Notice = Text.Get("DisconnectBeforeDelete"); return; }
+        if (_model.Snapshot.ProfileId == selected.Id &&
+            (_model.Snapshot.ProcessId.HasValue || _model.Snapshot.State is TunnelState.Connecting or TunnelState.Connected or TunnelState.Reconnecting))
+        {
+            _model.Notice = Text.Get("DisconnectBeforeDelete");
+            return;
+        }
         if (System.Windows.MessageBox.Show(this, Text.Get("DeleteProfilePrompt"), Text.Get("DeleteProfileTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         var remaining = _collection.Profiles.Where(p => p.Id != selected.Id).ToList();
         if (!Persist(_collection with { Profiles = remaining, Preferences = CurrentPreferences() with { SelectedProfileId = remaining.FirstOrDefault()?.Id } })) return;
-        _model.Profiles.Remove(selected); _model.Selected = _model.Profiles.FirstOrDefault();
+        _model.Profiles.Remove(selected);
+        _model.Selected = _model.Profiles.FirstOrDefault();
         _model.Notice = Text.Get("ProfileDeleted");
     }
 
@@ -300,33 +378,61 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (Encoding.UTF8.GetByteCount(text) > ServiceProtocol.MaxMessageBytes) { _model.Notice = Text.Get("ConfigurationTooLarge"); return; }
+            if (Encoding.UTF8.GetByteCount(text) > ServiceProtocol.MaxMessageBytes)
+            {
+                _model.Notice = Text.Get("ConfigurationTooLarge");
+                return;
+            }
             var parsed = Text.InCurrentLanguage(() => text.TrimStart().StartsWith("tt://", StringComparison.OrdinalIgnoreCase)
                 ? DeepLinkProfileCodec.Import(text)
                 : TomlProfileCodec.Import(text, name));
             var imported = parsed with { Id = Guid.NewGuid() };
             var errors = Text.InCurrentLanguage(() => ProfileValidator.Validate(imported));
-            if (errors.Count > 0) { _model.Notice = Text.Get("ImportFailedPrefix") + string.Join(" ", errors); return; }
+            if (errors.Count > 0)
+            {
+                _model.Notice = Text.Get("ImportFailedPrefix") + string.Join(" ", errors);
+                return;
+            }
             var draft = new ProfileEditor(imported, true);
-            _model.Profiles.Add(draft); _model.Selected = draft; _model.Page = 1;
+            _model.Profiles.Add(draft);
+            _model.Selected = draft;
+            _model.Page = 1;
             _model.Notice = Text.Get("ImportDraft");
         }
-        catch (ProfileImportException exception) { _model.Notice = Text.Get("ImportFailedPrefix") + exception.Message + Text.Get("ProfilesUnchangedSuffix"); }
-        catch { _model.Notice = Text.Get("ImportUnsupported"); }
+        catch (ProfileImportException exception)
+        {
+            _model.Notice = Text.Get("ImportFailedPrefix") + exception.Message + Text.Get("ProfilesUnchangedSuffix");
+        }
+        catch
+        {
+            _model.Notice = Text.Get("ImportUnsupported");
+        }
     }
 
     private void Import_Click(object sender, RoutedEventArgs e)
     {
-        var picker = new OpenFileDialog { Title = Text.Get("ImportFileTitle"), Filter = Text.Get("ImportFileFilter"), CheckFileExists = true };
+        var picker = new OpenFileDialog
+        {
+            Title = Text.Get("ImportFileTitle"),
+            Filter = Text.Get("ImportFileFilter"),
+            CheckFileExists = true
+        };
         if (picker.ShowDialog(this) != true) return;
         try
         {
             using var file = new FileStream(picker.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-            if (file.Length > ServiceProtocol.MaxMessageBytes) { _model.Notice = Text.Get("FileTooLarge"); return; }
+            if (file.Length > ServiceProtocol.MaxMessageBytes)
+            {
+                _model.Notice = Text.Get("FileTooLarge");
+                return;
+            }
             using var reader = new StreamReader(file, Encoding.UTF8, true);
             ImportText(reader.ReadToEnd(), Path.GetFileNameWithoutExtension(picker.FileName));
         }
-        catch { _model.Notice = Text.Get("FileReadFailed"); }
+        catch
+        {
+            _model.Notice = Text.Get("FileReadFailed");
+        }
     }
 
     private void PasteImport_Click(object sender, RoutedEventArgs e)
@@ -349,7 +455,11 @@ public partial class MainWindow : Window
             var response = await _client.SendAsync("logs", cancellationToken: _lifetime.Token);
             if (_closed) return;
             _model.Apply(response.Snapshot);
-            if (!response.Success) { _model.Notice = ErrorText(response, "LogsUnavailable"); return; }
+            if (!response.Success)
+            {
+                _model.Notice = ErrorText(response, "LogsUnavailable");
+                return;
+            }
             _logEntries = response.Logs.TakeLast(250).ToList();
             RefreshLogLanguage();
             _model.Notice = Text.Get("LogsUpdated");
@@ -360,48 +470,45 @@ public partial class MainWindow : Window
     private void RefreshLogLanguage()
     {
         _model.Logs.Clear();
+        var reportBuilder = CreateReportBuilder();
         foreach (var entry in _logEntries)
-            _model.Logs.Add(entry with { Message = Redact(Text.FromService(entry.Message, entry.MessageCode)) });
+            _model.Logs.Add(entry with { Message = reportBuilder.Redact(Text.FromService(entry.Message, entry.MessageCode)) });
     }
 
     private void Export_Click(object sender, RoutedEventArgs e)
     {
-        var picker = new SaveFileDialog { Title = Text.Get("ExportTitle"), Filter = Text.Get("ExportFilter"), FileName = $"Tunnela-diagnostics-{DateTime.Now:yyyyMMdd-HHmm}.txt" };
+        var picker = new SaveFileDialog
+        {
+            Title = Text.Get("ExportTitle"),
+            Filter = Text.Get("ExportFilter"),
+            FileName = $"Tunnela-diagnostics-{DateTime.Now:yyyyMMdd-HHmm}.txt"
+        };
         if (picker.ShowDialog(this) != true) return;
         try
         {
-            var report = new StringBuilder();
-            report.AppendLine(Text.Get("ReportTitle"));
-            report.AppendLine(Text.Get("ReportDate", DateTimeOffset.Now.ToString("O")));
-            report.AppendLine(Text.Get("ReportService", _model.ServiceText));
-            report.AppendLine(Text.Get("ReportState", _model.StatusTitle));
-            report.AppendLine(Text.Get("ReportProcess", _model.ProcessText));
-            report.AppendLine(Text.Get("ReportEngine", _model.EngineText));
-            report.AppendLine(Text.Get("ReportPrivacy"));
-            report.AppendLine();
-            // Only structured service diagnostics are accepted; raw engine output is never requested.
-            foreach (var entry in _model.Logs) report.AppendLine($"{entry.Timestamp:O} [{entry.Level}] {Redact(entry.Message)}");
-            File.WriteAllText(picker.FileName, report.ToString(), new UTF8Encoding(false));
+            var status = new DiagnosticReportStatus(_model.ServiceText, _model.StatusTitle, _model.ProcessText, _model.EngineText);
+            string report = CreateReportBuilder().Build(status, _model.Logs, DateTimeOffset.Now);
+            File.WriteAllText(picker.FileName, report, new UTF8Encoding(false));
             _model.Notice = Text.Get("ReportSaved");
         }
-        catch { _model.Notice = Text.Get("ReportSaveFailed"); }
+        catch
+        {
+            _model.Notice = Text.Get("ReportSaveFailed");
+        }
     }
 
-    private string Redact(string message)
-    {
-        foreach (var profile in _collection.Profiles.Concat(_model.Profiles.Select(p => p.ToProfile())))
-        {
-            var privateValues = new[] { profile.Password, profile.Username, profile.Hostname, profile.Name, profile.CertificatePem }.Concat(profile.Addresses);
-            foreach (var value in privateValues.Where(v => !string.IsNullOrEmpty(v))) message = message.Replace(value, Text.Get("Redacted"), StringComparison.OrdinalIgnoreCase);
-        }
-        return message;
-    }
+    private DiagnosticReportBuilder CreateReportBuilder() =>
+        new(_collection.Profiles.Concat(_model.Profiles.Select(p => p.ToProfile())));
 
     private async Task ExitAsync()
     {
         if (_closed || _exitPromptOpen) return;
         ShowFromTray();
-        if (_exitPending || _model.IsBusy) { _model.Notice = Text.Get("CommandInProgress"); return; }
+        if (_exitPending || _model.IsBusy)
+        {
+            _model.Notice = Text.Get("CommandInProgress");
+            return;
+        }
         _exitPending = true;
         UpdateTray();
         try
@@ -414,22 +521,34 @@ public partial class MainWindow : Window
                 var response = await _client.SendAsync("disconnect", cancellationToken: _lifetime.Token);
                 if (_closed) return;
                 _model.Apply(response.Snapshot);
-                disconnected = response.Success && response.Snapshot.State == TunnelState.Disconnected && response.Snapshot.ProcessId is null;
+                disconnected = response.Success && response.Snapshot.State == TunnelState.Disconnected &&
+                    response.Snapshot.ProcessId is null;
                 if (!disconnected) _model.Notice = ErrorText(response, "DisconnectNotConfirmed");
             });
             if (_closed) return;
+            // "Close interface only" may have opened its own prompt while disconnection was pending.
+            // Wait for that choice before attempting another prompt or disposing the window.
             if (_exitPromptClosed is { } prompt) await prompt.Task;
             if (_closed) return;
-            if (disconnected) { CloseApplication(); return; }
+            if (disconnected)
+            {
+                CloseApplication();
+                return;
+            }
             var message = !_model.ServiceAvailable
                 ? Text.Get("UnavailableExitPrompt")
                 : Text.Get("UnconfirmedExitPrompt");
             if (ConfirmExit(message, MessageBoxImage.Warning)) CloseApplication();
         }
-        finally { _exitPending = false; UpdateTray(); }
+        finally
+        {
+            _exitPending = false;
+            UpdateTray();
+        }
     }
 
-    private bool HasUnsavedChanges => _model.Profiles.Any(p => p.IsDirty) || _model.MinimizeToTray != _collection.Preferences.MinimizeToTray;
+    private bool HasUnsavedChanges =>
+        _model.Profiles.Any(p => p.IsDirty) || _model.MinimizeToTray != _collection.Preferences.MinimizeToTray;
 
     private bool ConfirmExit(string message, MessageBoxImage image)
     {
@@ -437,7 +556,11 @@ public partial class MainWindow : Window
         ShowFromTray();
         _exitPromptOpen = true;
         var promptClosed = _exitPromptClosed = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        try { return System.Windows.MessageBox.Show(this, message, Text.Get("ExitTitle"), MessageBoxButton.YesNo, image, MessageBoxResult.No) == MessageBoxResult.Yes; }
+        try
+        {
+            return System.Windows.MessageBox.Show(this, message, Text.Get("ExitTitle"), MessageBoxButton.YesNo,
+                image, MessageBoxResult.No) == MessageBoxResult.Yes;
+        }
         finally
         {
             _exitPromptOpen = false;
@@ -470,7 +593,11 @@ public partial class MainWindow : Window
         if (_model.MinimizeToTray)
         {
             Hide();
-            if (!_trayHintShown) { _tray.ShowBalloonTip(3000, Text.Get("BackgroundTitle"), Text.Get("BackgroundHint"), Forms.ToolTipIcon.Info); _trayHintShown = true; }
+            if (!_trayHintShown)
+            {
+                _tray.ShowBackgroundHint();
+                _trayHintShown = true;
+            }
             return;
         }
         // Let WPF finish the cancelled Closing event before showing a dialog or closing again.

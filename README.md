@@ -60,10 +60,10 @@ cd Tunnela
 
 The installer build runs isolated tests, prepares the pinned TrustTunnel CLI **1.1.7** and Wintun **0.14.1**, and uses a project-local NSIS **3.13** compiler. The SDK version is pinned in [global.json](global.json). The first build needs internet access to download dependencies; installation from the completed EXE works offline.
 
-The current output is:
+Building this revision produces:
 
 ```text
-.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe
+.artifacts\installer\Tunnela-0.1.0-preview.3-Setup-x64.exe
 ```
 
 To build, test, and publish the desktop and service separately:

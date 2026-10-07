@@ -25,6 +25,9 @@ public sealed class Text : INotifyPropertyChanged
         Culture = CultureInfo.GetCultureInfo(NormalizeLanguage(language));
         CultureInfo.DefaultThreadCurrentUICulture = Culture;
         CultureInfo.CurrentUICulture = Culture;
+
+        // LocExtension binds to this object's indexer. WPF treats "Item[]" as the
+        // indexer-change notification, so existing controls read their translations again.
         Current.PropertyChanged?.Invoke(Current, new PropertyChangedEventArgs("Item[]"));
     }
 
@@ -40,8 +43,15 @@ public sealed class Text : INotifyPropertyChanged
     internal static T InCurrentLanguage<T>(Func<T> action)
     {
         var previous = CultureInfo.CurrentUICulture;
-        try { CultureInfo.CurrentUICulture = Culture; return action(); }
-        finally { CultureInfo.CurrentUICulture = previous; }
+        try
+        {
+            CultureInfo.CurrentUICulture = Culture;
+            return action();
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = previous;
+        }
     }
 
     internal static string FromService(string fallback, string? code) => InCurrentLanguage(() => Messages.Translate(fallback, code));

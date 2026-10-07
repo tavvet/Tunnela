@@ -11,6 +11,34 @@ namespace Tunnela.Core;
 public static class DeepLinkProfileCodec
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
+    private const ulong MaximumSupportedLinkVersion = 2;
+
+    // These are TrustTunnel wire IDs; their numeric values must remain stable.
+    private static class LinkTag
+    {
+        public const ulong Version = 0;
+        public const ulong Hostname = 1;
+        public const ulong Address = 2;
+        public const ulong CustomSni = 3;
+        public const ulong HasIpv6 = 4;
+        public const ulong Username = 5;
+        public const ulong Password = 6;
+        public const ulong SkipVerification = 7;
+        public const ulong Certificate = 8;
+        public const ulong UpstreamProtocol = 9;
+        public const ulong AntiDpi = 10;
+        public const ulong ClientRandom = 11;
+        public const ulong Name = 12;
+        public const ulong DnsUpstreams = 13;
+        public const ulong Subscription = 14;
+        public const ulong HighestKnown = Subscription;
+    }
+
+    private static class ProtocolCode
+    {
+        public const ulong Http2 = 1;
+        public const ulong Http3 = 2;
+    }
 
     public static ServerProfile Import(string text)
     {
@@ -46,37 +74,39 @@ public static class DeepLinkProfileCodec
             var length = reader.ReadInteger();
             if (length > int.MaxValue) throw Malformed();
             var value = reader.ReadBytes((int)length);
-            if (tag == 2) addresses.Add(StrictUtf8.GetString(value));
-            else if (tag <= 14) fields[tag] = value.ToArray();
+            // Repeated addresses accumulate; for every other known tag, the last value wins.
+            if (tag == LinkTag.Address) addresses.Add(StrictUtf8.GetString(value));
+            else if (tag <= LinkTag.HighestKnown) fields[tag] = value.ToArray();
             // The specification requires that unknown tags are ignored.
         }
 
-        var version = Integer(fields, 0, 0);
-        if (version > 2) throw new ProfileImportException(Messages.Get("Link.VersionUnsupported"));
-        if (fields.ContainsKey(14))
+        // The original link format omitted the version tag and is interpreted as version 0.
+        var version = Integer(fields, LinkTag.Version, 0);
+        if (version > MaximumSupportedLinkVersion) throw new ProfileImportException(Messages.Get("Link.VersionUnsupported"));
+        if (fields.ContainsKey(LinkTag.Subscription))
             throw new ProfileImportException(Messages.Get("Link.SubscriptionUnsupported"));
-        if (Boolean(fields, 7, false))
+        if (Boolean(fields, LinkTag.SkipVerification, false))
             throw new ProfileImportException(Messages.Get("Import.CertificateVerificationDisabled"));
-        var hostname = String(fields, 1, required: true);
+        var hostname = String(fields, LinkTag.Hostname, required: true);
         var profile = new ServerProfile
         {
-            Name = String(fields, 12, hostname),
+            Name = String(fields, LinkTag.Name, hostname),
             Hostname = hostname,
             Addresses = addresses,
-            CustomSni = String(fields, 3),
-            HasIpv6 = Boolean(fields, 4, true),
-            Username = String(fields, 5, required: true),
-            Password = String(fields, 6, required: true),
-            CertificatePem = fields.TryGetValue(8, out var certificate) ? DecodeCertificates(certificate) : "",
-            UpstreamProtocol = Integer(fields, 9, 1) switch
+            CustomSni = String(fields, LinkTag.CustomSni),
+            HasIpv6 = Boolean(fields, LinkTag.HasIpv6, true),
+            Username = String(fields, LinkTag.Username, required: true),
+            Password = String(fields, LinkTag.Password, required: true),
+            CertificatePem = fields.TryGetValue(LinkTag.Certificate, out var certificate) ? DecodeCertificates(certificate) : "",
+            UpstreamProtocol = Integer(fields, LinkTag.UpstreamProtocol, ProtocolCode.Http2) switch
             {
-                1 => "http2",
-                2 => "http3",
+                ProtocolCode.Http2 => "http2",
+                ProtocolCode.Http3 => "http3",
                 _ => throw new ProfileImportException(Messages.Get("Link.ProtocolInvalid"))
             },
-            AntiDpi = Boolean(fields, 10, false),
-            ClientRandom = String(fields, 11),
-            DnsUpstreams = fields.TryGetValue(13, out var dns) ? DecodeStrings(dns) : []
+            AntiDpi = Boolean(fields, LinkTag.AntiDpi, false),
+            ClientRandom = String(fields, LinkTag.ClientRandom),
+            DnsUpstreams = fields.TryGetValue(LinkTag.DnsUpstreams, out var dns) ? DecodeStrings(dns) : []
         };
         var errors = ProfileValidator.Validate(profile);
         if (errors.Count > 0) throw new ProfileImportException(string.Join(Environment.NewLine, errors));
@@ -142,6 +172,8 @@ public static class DeepLinkProfileCodec
         public ulong ReadInteger()
         {
             if (_remaining.IsEmpty) throw Malformed();
+            // The top two bits encode the byte length: 1, 2, 4, or 8. The remaining bits
+            // and following bytes form the value in big-endian order.
             var length = 1 << (_remaining[0] >> 6);
             var encoded = ReadBytes(length);
             ulong value = (ulong)(encoded[0] & 0x3f);

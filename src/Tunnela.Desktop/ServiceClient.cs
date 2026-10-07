@@ -12,10 +12,19 @@ namespace Tunnela.Desktop;
 
 internal sealed class ServiceClient
 {
+    private const uint ScManagerConnect = 0x0001;
+    private const uint ServiceQueryStatus = 0x0004;
+    private const int ScStatusProcessInfo = 0;
+    private const int ErrorServiceDoesNotExist = 1060;
+    private const uint ServiceRunning = 4;
+    private const uint ServiceWin32OwnProcess = 0x10;
+
     public async Task<ServiceResponse> SendAsync(string command, ServerProfile? profile = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _ = GetServiceProcessId(); // Fail promptly if our service is absent or stopped.
+        // This is only a fast availability check. Authenticate the connected pipe below
+        // before sending a profile, which may contain credentials.
+        _ = GetServiceProcessId();
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(command is "connect" or "disconnect" ? 25 : 8));
         using var pipe = new NamedPipeClientStream(".", ServiceProtocol.PipeName,
@@ -26,55 +35,110 @@ internal sealed class ServiceClient
             connectionTimeout.CancelAfter(TimeSpan.FromSeconds(2));
             await pipe.ConnectAsync(connectionTimeout.Token);
         }
+
         VerifyServer(pipe);
         var request = new ServiceRequest { Command = command, Profile = profile };
         byte[] payload = JsonSerializer.SerializeToUtf8Bytes(request);
         try
         {
-            if (payload.Length + 1 > ServiceProtocol.MaxMessageBytes) throw new InvalidDataException();
+            if (payload.Length + 1 > ServiceProtocol.MaxMessageBytes)
+            {
+                throw new InvalidDataException();
+            }
+
             await pipe.WriteAsync(payload, timeout.Token);
             await pipe.WriteAsync(new byte[] { 10 }, timeout.Token);
             await pipe.FlushAsync(timeout.Token);
         }
-        finally { CryptographicOperations.ZeroMemory(payload); }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(payload);
+        }
+
         using var message = new MemoryStream();
         var buffer = new byte[4096];
         while (true)
         {
             int count = await pipe.ReadAsync(buffer, timeout.Token);
-            if (count == 0) throw new EndOfStreamException();
+            if (count == 0)
+            {
+                throw new EndOfStreamException();
+            }
+
             int end = Array.IndexOf(buffer, (byte)10, 0, count);
             int length = end < 0 ? count : end;
-            if (message.Length + length > ServiceProtocol.MaxMessageBytes) throw new InvalidDataException();
+            if (message.Length + length > ServiceProtocol.MaxMessageBytes)
+            {
+                throw new InvalidDataException();
+            }
+
             message.Write(buffer, 0, length);
-            if (end >= 0) break;
+            if (end >= 0)
+            {
+                break;
+            }
         }
+
         var response = JsonSerializer.Deserialize<ServiceResponse>(message.ToArray()) ?? throw new InvalidDataException();
-        if (response.ProtocolVersion != 1 || response.RequestId != request.RequestId) throw new InvalidDataException();
+        if (response.ProtocolVersion != 1 || response.RequestId != request.RequestId)
+        {
+            throw new InvalidDataException();
+        }
+
         return response;
     }
 
     private static void VerifyServer(NamedPipeClientStream pipe)
     {
-        if (!GetNamedPipeServerProcessId(pipe.SafePipeHandle, out uint processId)) throw new UnauthorizedAccessException();
-        if (processId != GetServiceProcessId()) throw new UnauthorizedAccessException();
+        if (!GetNamedPipeServerProcessId(pipe.SafePipeHandle, out uint processId))
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        // Query SCM again after connecting: the service may have restarted since the
+        // availability check. Never authenticate the pipe against that earlier PID.
+        if (processId != GetServiceProcessId())
+        {
+            throw new UnauthorizedAccessException();
+        }
     }
 
     private static uint GetServiceProcessId()
     {
         // Query the registered SCM service instead of opening a LocalSystem token:
         // token access can require SeDebugPrivilege, which the desktop must never request.
-        using var manager = OpenSCManager(null, null, 0x0001);
-        if (manager.IsInvalid) throw new UnauthorizedAccessException();
-        using var service = OpenService(manager, ServiceProtocol.ServiceName, 0x0004);
-        if (service.IsInvalid)
+        using var manager = OpenSCManager(null, null, ScManagerConnect);
+        if (manager.IsInvalid)
         {
-            if (Marshal.GetLastWin32Error() == 1060) throw new ServiceUnavailableException("ServiceNotInstalled");
             throw new UnauthorizedAccessException();
         }
-        if (!QueryServiceStatusEx(service, 0, out var status, Marshal.SizeOf<ServiceStatusProcess>(), out _)) throw new UnauthorizedAccessException();
-        if (status.CurrentState != 4) throw new ServiceUnavailableException("ServiceNotRunning");
-        if ((status.ServiceType & 0x10) == 0 || status.ProcessId == 0) throw new UnauthorizedAccessException();
+
+        using var service = OpenService(manager, ServiceProtocol.ServiceName, ServiceQueryStatus);
+        if (service.IsInvalid)
+        {
+            if (Marshal.GetLastWin32Error() == ErrorServiceDoesNotExist)
+            {
+                throw new ServiceUnavailableException("ServiceNotInstalled");
+            }
+
+            throw new UnauthorizedAccessException();
+        }
+
+        if (!QueryServiceStatusEx(service, ScStatusProcessInfo, out var status, Marshal.SizeOf<ServiceStatusProcess>(), out _))
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        if (status.CurrentState != ServiceRunning)
+        {
+            throw new ServiceUnavailableException("ServiceNotRunning");
+        }
+
+        if ((status.ServiceType & ServiceWin32OwnProcess) == 0 || status.ProcessId == 0)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         return status.ProcessId;
     }
 

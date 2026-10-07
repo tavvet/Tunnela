@@ -38,15 +38,19 @@ internal sealed class ConsoleEngineProcess : IDisposable
             throw new Win32Exception(Marshal.GetLastWin32Error());
         }
 
+        // The child inherits its output writer and NUL input. Close the parent's copies after launch;
+        // the reader stays local and is transferred to the returned session's StreamReader on success.
         using (write)
-        using (var input = NativeMethods.CreateFile("NUL", 0x80000000, 3, ref attributes, 3, 0, IntPtr.Zero))
+        using (var input = NativeMethods.CreateFile("NUL", NativeMethods.GenericRead,
+            NativeMethods.FileShareRead | NativeMethods.FileShareWrite, ref attributes,
+            NativeMethods.OpenExisting, 0, IntPtr.Zero))
         {
             Process? process = null;
             var nativeProcess = new NativeMethods.ProcessInformation();
             bool resumed = false;
             try
             {
-                if (input.IsInvalid || !NativeMethods.SetHandleInformation(read, 1, 0))
+                if (input.IsInvalid || !NativeMethods.SetHandleInformation(read, NativeMethods.HandleFlagInherit, 0))
                 {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
@@ -54,8 +58,8 @@ internal sealed class ConsoleEngineProcess : IDisposable
                 var startup = new NativeMethods.StartupInfo
                 {
                     Size = Marshal.SizeOf<NativeMethods.StartupInfo>(),
-                    Flags = 0x00000100 | 0x00000001, // STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW
-                    ShowWindow = 0, // SW_HIDE: a private console without an interactive window
+                    Flags = NativeMethods.StartfUseStdHandles | NativeMethods.StartfUseShowWindow,
+                    ShowWindow = NativeMethods.SwHide, // A private console without an interactive window.
                     StandardInput = input.DangerousGetHandle(),
                     StandardOutput = write.DangerousGetHandle(),
                     StandardError = write.DangerousGetHandle(),
@@ -63,7 +67,7 @@ internal sealed class ConsoleEngineProcess : IDisposable
                 // No shell and no user-supplied executable or arguments. A new console is needed for CTRL_C.
                 var command = new StringBuilder($"\"{InstallConfiguration.EnginePath}\" --config \"{InstallConfiguration.RuntimeConfigPath}\" --loglevel info");
                 if (!NativeMethods.CreateProcess(InstallConfiguration.EnginePath, command,
-                    IntPtr.Zero, IntPtr.Zero, true, 0x00000010 | 0x00000004,
+                    IntPtr.Zero, IntPtr.Zero, true, NativeMethods.CreateNewConsole | NativeMethods.CreateSuspended,
                     IntPtr.Zero, Path.GetDirectoryName(InstallConfiguration.EnginePath), ref startup, out nativeProcess))
                 {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -98,6 +102,8 @@ internal sealed class ConsoleEngineProcess : IDisposable
             }
             finally
             {
+                // These CreateProcess handles are independent of the managed Process object.
+                // On success, the returned session owns that object until its exit has been observed.
                 if (nativeProcess.Thread != IntPtr.Zero) NativeMethods.CloseHandle(nativeProcess.Thread);
                 if (nativeProcess.Process != IntPtr.Zero) NativeMethods.CloseHandle(nativeProcess.Process);
             }
@@ -107,7 +113,7 @@ internal sealed class ConsoleEngineProcess : IDisposable
     public static ConsoleEngineProcess? TryRecover()
     {
         if (!File.Exists(InstallConfiguration.ProcessRecordPath)) return null;
-        ProtectedFiles.RequireAdministratorWriteOnly(new FileInfo(InstallConfiguration.ProcessRecordPath));
+        ProtectedFiles.RequireProtectedAcl(new FileInfo(InstallConfiguration.ProcessRecordPath));
         var record = JsonSerializer.Deserialize<EngineSessionRecord>(File.ReadAllText(InstallConfiguration.ProcessRecordPath))
             ?? throw new InvalidDataException(Messages.GetEnglish("Service.OwnershipRecordInvalid"));
         try
@@ -150,7 +156,7 @@ internal static class EngineSignalHelper
             // No arbitrary PID or program path can be passed to this helper.
             if (!WindowsIdentity.GetCurrent().IsSystem || token.Length != 64) return 10;
             _ = InstallConfiguration.LoadAndValidate();
-            ProtectedFiles.RequireAdministratorWriteOnly(new FileInfo(InstallConfiguration.ProcessRecordPath));
+            ProtectedFiles.RequireProtectedAcl(new FileInfo(InstallConfiguration.ProcessRecordPath));
             var record = JsonSerializer.Deserialize<EngineSessionRecord>(File.ReadAllText(InstallConfiguration.ProcessRecordPath));
             if (record is null || !CryptographicOperations.FixedTimeEquals(
                 Encoding.ASCII.GetBytes(record.Token), Encoding.ASCII.GetBytes(token))) return 11;
@@ -166,7 +172,7 @@ internal static class EngineSignalHelper
             if (!NativeMethods.SetConsoleCtrlHandler(IntPtr.Zero, true)) return 14;
             ProtectedFiles.WriteSecret(InstallConfiguration.ProcessRecordPath,
                 JsonSerializer.Serialize(record with { StopSignalAttempted = true }));
-            if (!NativeMethods.GenerateConsoleCtrlEvent(0, 0)) // CTRL_C_EVENT, same dedicated console
+            if (!NativeMethods.GenerateConsoleCtrlEvent(NativeMethods.CtrlCEvent, 0)) // Same dedicated console.
             {
                 // A confirmed submission failure may be retried. Preserve the one-shot guard for
                 // successful or indeterminate outcomes, including a helper crash after submission.
@@ -188,6 +194,18 @@ internal static class EngineSignalHelper
 
 internal static class NativeMethods
 {
+    internal const uint GenericRead = 0x80000000;
+    internal const uint FileShareRead = 0x00000001;
+    internal const uint FileShareWrite = 0x00000002;
+    internal const uint OpenExisting = 3;
+    internal const uint HandleFlagInherit = 0x00000001;
+    internal const uint StartfUseStdHandles = 0x00000100;
+    internal const uint StartfUseShowWindow = 0x00000001;
+    internal const ushort SwHide = 0;
+    internal const uint CreateNewConsole = 0x00000010;
+    internal const uint CreateSuspended = 0x00000004;
+    internal const uint CtrlCEvent = 0;
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct SecurityAttributes
     {

@@ -9,6 +9,27 @@ Tunnela is an independent Windows wrapper for the TrustTunnel engine. The GUI an
 | Tunnela.Desktop | WPF, tray, encrypted user storage, IPC client |
 | Tunnela.Service | Installation validation, IPC server, CLI process, limited diagnostics |
 | Tunnela.Core.Tests | Isolated tests without launching the application or changing the network |
+| Tunnela.Desktop.Tests | Model, localization, report formatting, and in-memory WPF control checks |
+
+## Reading the C# code
+
+Start with these files when following a user action through the application:
+
+| Entry point | What to read there |
+| --- | --- |
+| [App.xaml.cs](../src/Tunnela.Desktop/App.xaml.cs) | GUI startup, loading preferences, and choosing the initial language |
+| [MainWindow.xaml.cs](../src/Tunnela.Desktop/MainWindow.xaml.cs) | User actions, service requests, profile saves, and the asynchronous exit flow |
+| [UiModel.cs](../src/Tunnela.Desktop/UiModel.cs) / [ProfileEditor.cs](../src/Tunnela.Desktop/ProfileEditor.cs) | Bindable connection state and editable drafts; `Source` retains fields the form does not expose |
+| [TrayController.cs](../src/Tunnela.Desktop/TrayController.cs) | Native icon/menu ownership; callbacks are scheduled by the window on its WPF dispatcher |
+| [DiagnosticReportBuilder.cs](../src/Tunnela.Desktop/DiagnosticReportBuilder.cs) | Report formatting and literal redaction for saved profiles and drafts, without file or service access |
+| [ServiceClient.cs](../src/Tunnela.Desktop/ServiceClient.cs) / [ControlPipeWorker.cs](../src/Tunnela.Service/ControlPipeWorker.cs) | The two ends of the authenticated, bounded IPC exchange |
+| [EngineSupervisor.cs](../src/Tunnela.Service/EngineSupervisor.cs) | Serialized connect/disconnect commands and state updates from process observers |
+| [ConsoleEngineProcess.cs](../src/Tunnela.Service/ConsoleEngineProcess.cs) | Native process launch, ownership records, and the one-shot graceful stop helper |
+| [Models.cs](../src/Tunnela.Contracts/Models.cs) | Shared data and wire contracts, including routing rules and the different roles of diagnostic and localization codes |
+
+For a connection request, follow `ToggleConnectionAsync` → `ServiceClient.SendAsync` → `ControlPipeWorker` → `EngineSupervisor` → `ConsoleEngineProcess`. Polling and recognized engine messages update the displayed state separately; successful process creation alone does not establish a VPN connection.
+
+For profile edits, `ProfileEditor.ToProfile` applies the draft to its saved `Source` using a record copy. `MainWindow.Persist` updates the in-memory saved collection only after `ProfileStore.Save` commits the encrypted replacement. The form's unsaved draft remains separate until then.
 
 ## Names and installation isolation
 

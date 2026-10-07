@@ -57,6 +57,14 @@ The user accepted the window layout and confirmed correct tray behavior after th
 5. Repeat exit with minimize-to-tray disabled: the window close button should start normal exit without hanging or opening duplicate dialogs.
 6. During testing with the installed service, check **Close interface…** while a command is pending. The GUI should exit after confirmation; a command already accepted by the service may complete later. This action does not establish that the VPN disconnected. Check its state separately.
 
+### After the readability refactor
+
+These focused checks are pending after the October 7 source refactor. Use a freshly built copy containing the refactor; the previously published `0.1.0-preview.2` installer does not contain it. Close the older GUI through **Close interface…** before opening the new GUI. These checks do not require connecting or disconnecting a VPN.
+
+1. Close the window to the tray, restore it with one left click, and open the menu with a right click. Expect one window and the same menu actions; **Close interface…** must remove the icon after confirmation without sending a disconnect command.
+2. Reopen, edit a profile without saving, then switch English/Russian. Expect the draft and routing mode to remain, with labels and tray actions translated. Choose **Close interface…** and cancel: the unsaved draft must remain visible.
+3. In Diagnostics, refresh available service events and export a report. Expect localized headings and timestamps, without profile names, hostnames, addresses, usernames, passwords, or certificate contents in diagnostic messages. Cancel or discard the draft after the check; no real connection is needed.
+
 ## Service without a connection
 
 1. Install the service following [INSTALL.md](INSTALL.md). The `Tunnela` service (`Tunnela VPN Service`) should be running and waiting for a command; `%ProgramFiles%\Tunnela\service\engine\trusttunnel_client.exe` must not start before connection. A process belonging to an existing client is not Tunnela's process.
@@ -99,7 +107,7 @@ Perform crash tests only after successful normal shutdown tests and when prepare
 
 ## Installer acceptance
 
-Package under test: `.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe`, an unsigned NSIS 3.13 preview. Begin after its build is confirmed in [BUILD-STATUS.md](BUILD-STATUS.md). Building the package does not establish that acceptance has passed. Only the user performs installation, updates, uninstallation, UAC approval, reboots, and network actions. Manually disconnect the earlier VPN before network steps.
+Target package for this revision: `.artifacts\installer\Tunnela-0.1.0-preview.3-Setup-x64.exe`, an unsigned NSIS 3.13 preview. This package has not yet been built or tested. Begin after its build is confirmed in [BUILD-STATUS.md](BUILD-STATUS.md). Building the package does not establish that acceptance has passed. Only the user performs installation, updates, uninstallation, UAC approval, reboots, and network actions. Manually disconnect the earlier VPN before network steps.
 
 Historical result for `0.1.0-preview.1`: repeat installation, the shortcut, and operation after reboot are confirmed by the user. This covers the basic path in steps 2–4; every detail listed in those steps has not been verified separately. Refusal with an open GUI and disconnected VPN in step 5 is also confirmed. Step 7, uninstall/reinstall with preserved profiles, passed; the user separately verified service removal in the Services console. Step 6, protection of an active tunnel with the GUI closed, remains unconfirmed. The October 7 report that the localized `0.1.0-preview.2` works does not confirm that this full installer plan was repeated; installer failure/recovery and the remaining network cases are still pending.
 

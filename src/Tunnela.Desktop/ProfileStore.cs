@@ -15,34 +15,93 @@ internal sealed class ProfileStore
 
     public ProfileCollection Load()
     {
-        if (!File.Exists(FilePath)) return new ProfileCollection();
+        if (!File.Exists(FilePath))
+        {
+            return new ProfileCollection();
+        }
+
         var file = new FileInfo(FilePath);
-        if (file.Length > MaxStoredBytes) throw new InvalidDataException();
+        if (file.Length > MaxStoredBytes)
+        {
+            throw new InvalidDataException();
+        }
+
         byte[] plaintext = ProtectedData.Unprotect(File.ReadAllBytes(FilePath), null, DataProtectionScope.CurrentUser);
         try
         {
             var result = JsonSerializer.Deserialize<ProfileCollection>(plaintext) ?? throw new InvalidDataException();
-            if (result.SchemaVersion != 1 || result.Profiles is null || result.Preferences is null || result.Profiles.Any(p => p is null) || result.Profiles.Select(p => p.Id).Distinct().Count() != result.Profiles.Count) throw new InvalidDataException();
+            if (result.SchemaVersion != 1
+                || result.Profiles is null
+                || result.Preferences is null
+                || result.Profiles.Any(p => p is null)
+                || result.Profiles.Select(p => p.Id).Distinct().Count() != result.Profiles.Count)
+            {
+                throw new InvalidDataException();
+            }
+
             return result;
         }
-        finally { CryptographicOperations.ZeroMemory(plaintext); }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
     }
 
     public void Save(ProfileCollection collection)
+    {
+        EnsureProtectedDirectory();
+        byte[] encrypted = Encrypt(collection);
+        if (encrypted.Length > MaxStoredBytes)
+        {
+            throw new InvalidDataException();
+        }
+
+        CommitEncryptedFile(encrypted);
+    }
+
+    private void EnsureProtectedDirectory()
     {
         Directory.CreateDirectory(_directory);
         var security = new DirectorySecurity();
         security.SetAccessRuleProtection(true, false);
         using var identity = WindowsIdentity.GetCurrent();
         var current = identity.User ?? throw new UnauthorizedAccessException();
-        foreach (var sid in new[] { current, new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null), new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null) })
-            security.AddAccessRule(new FileSystemAccessRule(sid, FileSystemRights.FullControl, InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
+        var allowedSids = new[]
+        {
+            current,
+            new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
+            new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null)
+        };
+        foreach (var sid in allowedSids)
+        {
+            security.AddAccessRule(new FileSystemAccessRule(
+                sid,
+                FileSystemRights.FullControl,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None,
+                AccessControlType.Allow));
+        }
+
         new DirectoryInfo(_directory).SetAccessControl(security);
+    }
+
+    private static byte[] Encrypt(ProfileCollection collection)
+    {
         var plaintext = JsonSerializer.SerializeToUtf8Bytes(collection);
-        byte[] encrypted;
-        try { encrypted = ProtectedData.Protect(plaintext, null, DataProtectionScope.CurrentUser); }
-        finally { CryptographicOperations.ZeroMemory(plaintext); }
-        if (encrypted.Length > MaxStoredBytes) throw new InvalidDataException();
+        try
+        {
+            return ProtectedData.Protect(plaintext, null, DataProtectionScope.CurrentUser);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
+    }
+
+    private void CommitEncryptedFile(byte[] encrypted)
+    {
+        // Write encrypted bytes beside the destination and flush them before replacement.
+        // A failed write must leave the existing store intact rather than truncate it.
         string temporary = Path.Combine(_directory, $"profiles.{Guid.NewGuid():N}.tmp");
         try
         {
@@ -51,9 +110,21 @@ internal sealed class ProfileStore
                 stream.Write(encrypted);
                 stream.Flush(true);
             }
-            if (File.Exists(FilePath)) File.Replace(temporary, FilePath, null);
-            else File.Move(temporary, FilePath);
+            if (File.Exists(FilePath))
+            {
+                File.Replace(temporary, FilePath, null);
+            }
+            else
+            {
+                File.Move(temporary, FilePath);
+            }
         }
-        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+        finally
+        {
+            if (File.Exists(temporary))
+            {
+                File.Delete(temporary);
+            }
+        }
     }
 }

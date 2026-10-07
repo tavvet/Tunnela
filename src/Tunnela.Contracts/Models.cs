@@ -16,6 +16,11 @@ public sealed record ServerProfile
     public string UpstreamProtocol { get; init; } = "http2";
     public List<string> DnsUpstreams { get; init; } = [];
     public RoutingMode RoutingMode { get; init; } = RoutingMode.General;
+
+    /// <summary>
+    /// Destinations that bypass VPN in General mode or use VPN in Selective mode.
+    /// Both modes store this list in the upstream TOML field named "exclusions".
+    /// </summary>
     public List<string> Rules { get; init; } = [];
     public bool KillSwitchEnabled { get; init; } = true;
     public bool TcpEarlyAckEnabled { get; init; }
@@ -55,17 +60,28 @@ public sealed record ProfileCollection
 public sealed record TunnelSnapshot
 {
     public TunnelState State { get; init; } = TunnelState.Disconnected;
+
+    /// <summary>English fallback for the state description; older services may send Russian text.</summary>
     public string Message { get; init; } = "VPN is disconnected.";
+
+    /// <summary>Localization key for Message. Optional so responses from older services remain readable.</summary>
     public string? MessageCode { get; init; }
     public Guid? ProfileId { get; init; }
     public string? ProfileName { get; init; }
     public DateTimeOffset? StartedAt { get; init; }
     public int? ProcessId { get; init; }
+
+    /// <summary>Diagnostic state code, such as StopTimedOut; not a localization key. Null when no error is recorded.</summary>
     public string? ErrorCode { get; init; }
     public bool EngineAvailable { get; init; }
     public string EngineVersion { get; init; } = "1.1.7";
 }
 
+/// <summary>A sanitized service event with a fallback message and an optional localization key.</summary>
+/// <param name="Timestamp">Time of the event.</param>
+/// <param name="Level">Severity of the event.</param>
+/// <param name="Message">English fallback text; older services may send Russian text.</param>
+/// <param name="MessageCode">Localization key; absent in events from older services.</param>
 public sealed record DiagnosticEntry(DateTimeOffset Timestamp, string Level, string Message, string? MessageCode = null);
 
 public sealed record ServiceRequest
@@ -81,7 +97,14 @@ public sealed record ServiceResponse
     public int ProtocolVersion { get; init; } = 1;
     public Guid RequestId { get; init; }
     public bool Success { get; init; }
+
+    /// <summary>English fallback for an operation failure; older services may send Russian text.</summary>
     public string? Error { get; init; }
+
+    /// <summary>
+    /// Localization key for Error, unlike the diagnostic ErrorCode in TunnelSnapshot.
+    /// Optional for compatibility with responses from older services.
+    /// </summary>
     public string? ErrorCode { get; init; }
     public TunnelSnapshot Snapshot { get; init; } = new();
     public List<DiagnosticEntry> Logs { get; init; } = [];
