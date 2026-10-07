@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="ViewProductName" xml:space="preserve"><value>Tunnela</value></data>
+  <data name="ViewBrandName" xml:space="preserve"><value>TUNNELA</value></data>
+  <data name="ViewPlatform" xml:space="preserve"><value>Для Windows · TrustTunnel</value></data>
+  <data name="ViewDeviceConnection" xml:space="preserve"><value>Подключение для устройства</value></data>
+  <data name="ViewServiceRole" xml:space="preserve"><value>Управление сетью выполняет служба Windows.</value></data>
+  <data name="ViewConnection" xml:space="preserve"><value>Подключение</value></data>
+  <data name="ViewServers" xml:space="preserve"><value>Серверы</value></data>
+  <data name="ViewRouting" xml:space="preserve"><value>Маршрутизация</value></data>
+  <data name="ViewSettings" xml:space="preserve"><value>Настройки</value></data>
+  <data name="ViewDiagnostics" xml:space="preserve"><value>Диагностика</value></data>
+  <data name="ViewPersonalConnection" xml:space="preserve"><value>Личное подключение</value></data>
+  <data name="ViewEngineBadge" xml:space="preserve"><value>Windows · CLI 1.1.7</value></data>
+  <data name="ViewConnectionTagline" xml:space="preserve"><value>Ваш сервер. Ваше соединение.</value></data>
+  <data name="ViewVpnStatus" xml:space="preserve"><value>СОСТОЯНИЕ VPN</value></data>
+  <data name="ViewNextConnectionServer" xml:space="preserve"><value>Сервер для следующего подключения</value></data>
+  <data name="ViewConnectionServerAccess" xml:space="preserve"><value>Сервер для подключения</value></data>
+  <data name="ViewRefreshStatus" xml:space="preserve"><value>Обновить состояние</value></data>
+  <data name="ViewControlService" xml:space="preserve"><value>Служба управления</value></data>
+  <data name="ViewClientProcess" xml:space="preserve"><value>Процесс клиента</value></data>
+  <data name="ViewConnectionStateHint" xml:space="preserve"><value>Запущенная служба или процесс ещё не означают, что VPN подключён.</value></data>
+  <data name="ViewAdd" xml:space="preserve"><value>Добавить</value></data>
+  <data name="ViewImportToml" xml:space="preserve"><value>Импорт TOML</value></data>
+  <data name="ViewPasteConfiguration" xml:space="preserve"><value>Вставить конфигурацию</value></data>
+  <data name="ViewServerListAccess" xml:space="preserve"><value>Список серверов</value></data>
+  <data name="ViewConnectionSettings" xml:space="preserve"><value>Настройки подключения</value></data>
+  <data name="ViewDraftHint" xml:space="preserve"><value>Изменения сохраняются кнопкой внизу. При переходе между разделами черновик остаётся.</value></data>
+  <data name="ViewName" xml:space="preserve"><value>Название</value></data>
+  <data name="ViewConnectionNameAccess" xml:space="preserve"><value>Название подключения</value></data>
+  <data name="ViewCertificateHostname" xml:space="preserve"><value>Имя сервера для проверки сертификата</value></data>
+  <data name="ViewHostnameAccess" xml:space="preserve"><value>Имя сервера</value></data>
+  <data name="ViewAddresses" xml:space="preserve"><value>Адреса подключения — по одному на строку</value></data>
+  <data name="ViewAddressesAccess" xml:space="preserve"><value>IP адреса и порты сервера</value></data>
+  <data name="ViewAddressExample" xml:space="preserve"><value>Формат: 203.0.113.10:443 или [2001:db8::1]:443</value></data>
+  <data name="ViewUsername" xml:space="preserve"><value>Имя пользователя</value></data>
+  <data name="ViewPassword" xml:space="preserve"><value>Пароль</value></data>
+  <data name="ViewConnectionPasswordAccess" xml:space="preserve"><value>Пароль подключения</value></data>
+  <data name="ViewAdvancedParameters" xml:space="preserve"><value>Дополнительные параметры</value></data>
+  <data name="ViewTransport" xml:space="preserve"><value>Транспорт</value></data>
+  <data name="ViewHttp2" xml:space="preserve"><value>HTTP/2</value></data>
+  <data name="ViewHttp3" xml:space="preserve"><value>HTTP/3</value></data>
+  <data name="ViewServerIpv6" xml:space="preserve"><value>Поддержка IPv6 на сервере</value></data>
+  <data name="ViewDns" xml:space="preserve"><value>DNS — по одному адресу на строку</value></data>
+  <data name="ViewDnsAccess" xml:space="preserve"><value>DNS серверы</value></data>
+  <data name="ViewCertificate" xml:space="preserve"><value>Сертификат PEM — если требуется сервером</value></data>
+  <data name="ViewCertificateAccess" xml:space="preserve"><value>Сертификат сервера</value></data>
+  <data name="ViewKillSwitch" xml:space="preserve"><value>Встроенная блокировка трафика CLI при разрыве (kill switch)</value></data>
+  <data name="ViewKillSwitchHint" xml:space="preserve"><value>Защита после аварии процесса или остановки службы не гарантирована. Поведение требует проверки на вашем устройстве.</value></data>
+  <data name="ViewSave" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ViewDelete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="ViewRoutingProfileHint" xml:space="preserve"><value>Правила принадлежат выбранному подключению.</value></data>
+  <data name="ViewRoutingProfileAccess" xml:space="preserve"><value>Профиль маршрутизации</value></data>
+  <data name="ViewRoutingTraffic" xml:space="preserve"><value>Что направлять через VPN</value></data>
+  <data name="ViewGeneralRouting" xml:space="preserve"><value>Весь трафик, кроме списка ниже</value></data>
+  <data name="ViewSelectiveRouting" xml:space="preserve"><value>Только адреса из списка ниже</value></data>
+  <data name="ViewRoutingRules" xml:space="preserve"><value>Домены, IP и подсети CIDR — по одному правилу на строку</value></data>
+  <data name="ViewRoutingRulesAccess" xml:space="preserve"><value>Правила маршрутизации</value></data>
+  <data name="ViewRoutingExamples" xml:space="preserve"><value>Примеры: example.org, 192.168.1.10, 10.0.0.0/8. Правила для отдельных приложений не поддерживаются.</value></data>
+  <data name="ViewSaveRules" xml:space="preserve"><value>Сохранить правила</value></data>
+  <data name="ViewReconnectHint" xml:space="preserve"><value>Изменения применятся при следующем подключении.</value></data>
+  <data name="ViewAppBehavior" xml:space="preserve"><value>Поведение приложения</value></data>
+  <data name="ViewMinimizeToTray" xml:space="preserve"><value>При закрытии окна оставлять приложение в области уведомлений</value></data>
+  <data name="ViewMinimizeToTrayHint" xml:space="preserve"><value>Туннель продолжает работать при скрытом окне. В меню значка доступна команда «Отключиться и выйти».</value></data>
+  <data name="ViewSavePreferences" xml:space="preserve"><value>Сохранить настройки</value></data>
+  <data name="ViewDataStorage" xml:space="preserve"><value>Хранение данных</value></data>
+  <data name="ViewDataStorageHint" xml:space="preserve"><value>Профили зашифрованы средствами Windows и доступны вашей учётной записи. Импортированные файлы остаются в исходной папке. Автоподключение до входа в Windows в этой версии отсутствует.</value></data>
+  <data name="ViewRefreshLogs" xml:space="preserve"><value>Обновить журнал</value></data>
+  <data name="ViewExportReport" xml:space="preserve"><value>Сохранить отчёт</value></data>
+  <data name="ViewImportTitle" xml:space="preserve"><value>Импорт конфигурации</value></data>
+  <data name="ViewImportHeading" xml:space="preserve"><value>Вставьте TOML или ссылку tt://</value></data>
+  <data name="ViewImportHint" xml:space="preserve"><value>Поддерживаются статические ссылки TrustTunnel. Данные могут содержать пароль. Существующие профили при импорте не изменятся.</value></data>
+  <data name="ViewImportInputAccess" xml:space="preserve"><value>Конфигурация TOML или ссылка TrustTunnel для импорта</value></data>
+  <data name="ViewCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ViewImport" xml:space="preserve"><value>Импортировать</value></data>
+  <data name="ViewLanguage" xml:space="preserve"><value>Язык интерфейса</value></data>
+  <data name="ViewLanguageHint" xml:space="preserve"><value>Применяется сразу и сохраняется автоматически.</value></data>
+</root>

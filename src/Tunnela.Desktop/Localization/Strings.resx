@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="NewConnection" xml:space="preserve"><value>New connection</value></data>
+  <data name="RoutingSelectiveHint" xml:space="preserve"><value>Only the listed addresses use the VPN. All other traffic connects directly.</value></data>
+  <data name="RoutingGeneralHint" xml:space="preserve"><value>All traffic uses the VPN except the listed addresses, which connect directly.</value></data>
+  <data name="CheckingService" xml:space="preserve"><value>Checking service</value></data>
+  <data name="GettingStatus" xml:space="preserve"><value>Getting connection status…</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="SelectServerHint" xml:space="preserve"><value>Add a server to connect</value></data>
+  <data name="Available" xml:space="preserve"><value>Available</value></data>
+  <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="Disconnect" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Connect" xml:space="preserve"><value>Connect</value></data>
+  <data name="Unnamed" xml:space="preserve"><value>unnamed</value></data>
+  <data name="ActiveProfile" xml:space="preserve"><value>Service connection: {0}</value></data>
+  <data name="VpnDisconnected" xml:space="preserve"><value>VPN disconnected</value></data>
+  <data name="Connecting" xml:space="preserve"><value>Connecting</value></data>
+  <data name="VpnConnected" xml:space="preserve"><value>VPN connected</value></data>
+  <data name="Reconnecting" xml:space="preserve"><value>Reconnecting</value></data>
+  <data name="Disconnecting" xml:space="preserve"><value>Disconnecting</value></data>
+  <data name="AttentionRequired" xml:space="preserve"><value>Attention required</value></data>
+  <data name="StatusUnknown" xml:space="preserve"><value>Status unknown</value></data>
+  <data name="ProcessRunning" xml:space="preserve"><value>Running</value></data>
+  <data name="ProcessStopped" xml:space="preserve"><value>Not running</value></data>
+  <data name="EngineMissing" xml:space="preserve"><value>Engine not installed</value></data>
+  <data name="ServiceUnavailable" xml:space="preserve"><value>Service unavailable</value></data>
+  <data name="ServiceUnavailableHint" xml:space="preserve"><value>VPN status is unknown. Check the service installation using docs/INSTALL.md. You can still configure profiles.</value></data>
+  <data name="AlreadyRunning" xml:space="preserve"><value>Tunnela is already running. Open it from its notification area icon.</value></data>
+  <data name="IconMissing" xml:space="preserve"><value>The Tunnela icon is missing from application resources.</value></data>
+  <data name="TrayUnknown" xml:space="preserve"><value>Tunnela — status unknown</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Open Tunnela</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Disconnect and exit</value></data>
+  <data name="TrayCloseInterface" xml:space="preserve"><value>Close interface…</value></data>
+  <data name="AddServerHint" xml:space="preserve"><value>Add a server manually, import a TOML file, or paste a tt:// link.</value></data>
+  <data name="ProfilesLoaded" xml:space="preserve"><value>Profiles loaded. Connect manually when ready.</value></data>
+  <data name="ProfilesReadFailed" xml:space="preserve"><value>Could not read saved profiles. The original profiles.dat file is preserved; saving is disabled to prevent data loss.</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>The service could not retrieve the status.</value></data>
+  <data name="ServiceVerificationFailed" xml:space="preserve"><value>Could not verify or access the service. Check the installation and permissions; no secrets were sent to an unverified service.</value></data>
+  <data name="ServiceNoResponse" xml:space="preserve"><value>No verified response from the service. VPN status is unknown; refresh the status and check the service installation.</value></data>
+  <data name="ServiceNotReady" xml:space="preserve"><value>The service is not ready.</value></data>
+  <data name="RefreshUnknownStatus" xml:space="preserve"><value>Could not determine the status. Refresh the service status first.</value></data>
+  <data name="SelectServer" xml:space="preserve"><value>Add or select a server.</value></data>
+  <data name="WaitingDisconnect" xml:space="preserve"><value>Waiting for the service to confirm disconnection…</value></data>
+  <data name="WaitingConnect" xml:space="preserve"><value>Waiting for the service to respond to the connection request…</value></data>
+  <data name="DisconnectCompleted" xml:space="preserve"><value>Disconnection command completed.</value></data>
+  <data name="ConnectRequested" xml:space="preserve"><value>Connection request sent to the service.</value></data>
+  <data name="CommandRejected" xml:space="preserve"><value>The service rejected the command.</value></data>
+  <data name="StorageReadOnly" xml:space="preserve"><value>Saving is disabled. Restore access to the original profiles file first.</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Could not save the data. Previous settings are preserved and your draft remains in the window.</value></data>
+  <data name="ProfileTooLarge" xml:space="preserve"><value>The profile is too large to connect. Shorten the rules list or reduce the certificate size.</value></data>
+  <data name="InvalidProfile" xml:space="preserve"><value>Check the connection fields: the configuration is invalid.</value></data>
+  <data name="ProfileSaved" xml:space="preserve"><value>Saved. Changes take effect the next time you connect.</value></data>
+  <data name="FillServerHint" xml:space="preserve"><value>Enter the server details and select Save.</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Application settings saved.</value></data>
+  <data name="LanguageSaved" xml:space="preserve"><value>Interface language saved.</value></data>
+  <data name="DisconnectBeforeDelete" xml:space="preserve"><value>Disconnect the active connection first.</value></data>
+  <data name="DeleteProfilePrompt" xml:space="preserve"><value>Delete the selected profile and its unsaved changes?</value></data>
+  <data name="DeleteProfileTitle" xml:space="preserve"><value>Tunnela — delete profile</value></data>
+  <data name="ProfileDeleted" xml:space="preserve"><value>Profile deleted.</value></data>
+  <data name="ConfigurationTooLarge" xml:space="preserve"><value>The configuration is too large (maximum 256 KiB).</value></data>
+  <data name="ImportFailedPrefix" xml:space="preserve"><value>Import failed. </value></data>
+  <data name="ImportDraft" xml:space="preserve"><value>Configuration imported as a draft. Review the fields and select Save.</value></data>
+  <data name="ProfilesUnchangedSuffix" xml:space="preserve"><value> Existing profiles have not been changed.</value></data>
+  <data name="ImportUnsupported" xml:space="preserve"><value>Import failed: the data is not a supported TrustTunnel configuration. Existing profiles have not been changed.</value></data>
+  <data name="ImportFileTitle" xml:space="preserve"><value>Tunnela — import TrustTunnel configuration</value></data>
+  <data name="ImportFileFilter" xml:space="preserve"><value>TOML configuration (*.toml)|*.toml|Text files (*.txt)|*.txt</value></data>
+  <data name="FileTooLarge" xml:space="preserve"><value>The file is too large (maximum 256 KiB).</value></data>
+  <data name="FileReadFailed" xml:space="preserve"><value>Could not read the file. Existing profiles have not been changed.</value></data>
+  <data name="LogsUnavailable" xml:space="preserve"><value>The log is unavailable.</value></data>
+  <data name="LogsUpdated" xml:space="preserve"><value>Log updated. Passwords and configurations are excluded from the report.</value></data>
+  <data name="ExportTitle" xml:space="preserve"><value>Tunnela — save diagnostic report</value></data>
+  <data name="ExportFilter" xml:space="preserve"><value>Text report (*.txt)|*.txt</value></data>
+  <data name="ReportTitle" xml:space="preserve"><value>Tunnela — diagnostic report</value></data>
+  <data name="ReportDate" xml:space="preserve"><value>Date: {0}</value></data>
+  <data name="ReportService" xml:space="preserve"><value>Service: {0}</value></data>
+  <data name="ReportState" xml:space="preserve"><value>State: {0}</value></data>
+  <data name="ReportProcess" xml:space="preserve"><value>Process: {0}</value></data>
+  <data name="ReportEngine" xml:space="preserve"><value>Engine: {0}</value></data>
+  <data name="ReportPrivacy" xml:space="preserve"><value>Profiles, addresses, passwords, and configurations are excluded from this report.</value></data>
+  <data name="ReportSaved" xml:space="preserve"><value>Diagnostic report saved. You can review it before sharing.</value></data>
+  <data name="ReportSaveFailed" xml:space="preserve"><value>Could not save the diagnostic report.</value></data>
+  <data name="Redacted" xml:space="preserve"><value>[redacted]</value></data>
+  <data name="CommandInProgress" xml:space="preserve"><value>A command is still running. Wait for a response or select Close interface… in the tray menu.</value></data>
+  <data name="UnsavedExitPrompt" xml:space="preserve"><value>You have unsaved changes. Exit without saving?</value></data>
+  <data name="DisconnectBeforeExit" xml:space="preserve"><value>Disconnecting the VPN before exiting. To close only the window, select Close interface… in the tray menu.</value></data>
+  <data name="DisconnectNotConfirmed" xml:space="preserve"><value>The service has not confirmed disconnection yet. The application will remain open.</value></data>
+  <data name="UnavailableExitPrompt" xml:space="preserve"><value>The service is unavailable and VPN disconnection is unconfirmed. Close only the Tunnela interface? Connection status will remain unknown.</value></data>
+  <data name="UnconfirmedExitPrompt" xml:space="preserve"><value>The service has not confirmed a clean VPN disconnection. Close only the Tunnela interface? The VPN process may still be running; its status and network cleanup are unconfirmed.</value></data>
+  <data name="ExitTitle" xml:space="preserve"><value>Tunnela — exit</value></data>
+  <data name="CloseInterfacePrompt" xml:space="preserve"><value>Close only the Tunnela interface? No VPN disconnection command will be sent. An active tunnel may keep running.</value></data>
+  <data name="PendingCommandSuffix" xml:space="preserve"><value>
+
+A command already sent to the service may complete after the window closes.</value></data>
+  <data name="UnsavedChangesSuffix" xml:space="preserve"><value>
+
+Unsaved changes will be lost.</value></data>
+  <data name="BackgroundTitle" xml:space="preserve"><value>Tunnela is running in the background</value></data>
+  <data name="BackgroundHint" xml:space="preserve"><value>Use the notification area icon to open the window or disconnect.</value></data>
+  <data name="ServiceNotInstalled" xml:space="preserve"><value>The Tunnela service is not installed. You can still use the interface and configure profiles.</value></data>
+  <data name="ServiceNotRunning" xml:space="preserve"><value>The Tunnela service is not running. You can still use the interface and configure profiles.</value></data>
+</root>

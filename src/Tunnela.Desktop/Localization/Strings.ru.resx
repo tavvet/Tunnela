@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="NewConnection" xml:space="preserve"><value>Новое подключение</value></data>
+  <data name="RoutingSelectiveHint" xml:space="preserve"><value>Через VPN пойдут только перечисленные адреса. Остальной трафик — напрямую.</value></data>
+  <data name="RoutingGeneralHint" xml:space="preserve"><value>Через VPN пойдёт весь трафик, кроме перечисленных адресов. Исключения пойдут напрямую.</value></data>
+  <data name="CheckingService" xml:space="preserve"><value>Проверка службы</value></data>
+  <data name="GettingStatus" xml:space="preserve"><value>Получаем состояние подключения…</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="SelectServerHint" xml:space="preserve"><value>Добавьте сервер, чтобы подключиться</value></data>
+  <data name="Available" xml:space="preserve"><value>Доступна</value></data>
+  <data name="Unavailable" xml:space="preserve"><value>Недоступна</value></data>
+  <data name="Disconnect" xml:space="preserve"><value>Отключиться</value></data>
+  <data name="Connect" xml:space="preserve"><value>Подключиться</value></data>
+  <data name="Unnamed" xml:space="preserve"><value>без названия</value></data>
+  <data name="ActiveProfile" xml:space="preserve"><value>Подключение службы: {0}</value></data>
+  <data name="VpnDisconnected" xml:space="preserve"><value>VPN отключён</value></data>
+  <data name="Connecting" xml:space="preserve"><value>Подключаемся</value></data>
+  <data name="VpnConnected" xml:space="preserve"><value>VPN подключён</value></data>
+  <data name="Reconnecting" xml:space="preserve"><value>Восстанавливаем соединение</value></data>
+  <data name="Disconnecting" xml:space="preserve"><value>Отключаемся</value></data>
+  <data name="AttentionRequired" xml:space="preserve"><value>Требуется внимание</value></data>
+  <data name="StatusUnknown" xml:space="preserve"><value>Состояние неизвестно</value></data>
+  <data name="ProcessRunning" xml:space="preserve"><value>Запущен</value></data>
+  <data name="ProcessStopped" xml:space="preserve"><value>Не запущен</value></data>
+  <data name="EngineMissing" xml:space="preserve"><value>Движок не установлен</value></data>
+  <data name="ServiceUnavailable" xml:space="preserve"><value>Служба недоступна</value></data>
+  <data name="ServiceUnavailableHint" xml:space="preserve"><value>Состояние VPN неизвестно. Проверьте установку службы по инструкции docs/INSTALL.md. Профили можно настроить уже сейчас.</value></data>
+  <data name="AlreadyRunning" xml:space="preserve"><value>Приложение уже работает. Откройте его через значок Tunnela в области уведомлений.</value></data>
+  <data name="IconMissing" xml:space="preserve"><value>Значок Tunnela отсутствует в ресурсах приложения.</value></data>
+  <data name="TrayUnknown" xml:space="preserve"><value>Tunnela — состояние неизвестно</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Открыть Tunnela</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Отключиться и выйти</value></data>
+  <data name="TrayCloseInterface" xml:space="preserve"><value>Закрыть интерфейс…</value></data>
+  <data name="AddServerHint" xml:space="preserve"><value>Добавьте сервер вручную, импортируйте TOML или вставьте ссылку tt://.</value></data>
+  <data name="ProfilesLoaded" xml:space="preserve"><value>Профили загружены. Подключение запускается вручную.</value></data>
+  <data name="ProfilesReadFailed" xml:space="preserve"><value>Не удалось прочитать сохранённые профили. Исходный файл profiles.dat сохранён; запись заблокирована, чтобы не потерять данные.</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>Служба не смогла получить состояние.</value></data>
+  <data name="ServiceVerificationFailed" xml:space="preserve"><value>Не удалось подтвердить подлинность службы или получить доступ. Проверьте установку и права доступа; секреты не отправлены непроверенной службе.</value></data>
+  <data name="ServiceNoResponse" xml:space="preserve"><value>Нет подтверждённого ответа службы. Состояние VPN неизвестно; обновите состояние и проверьте установку службы.</value></data>
+  <data name="ServiceNotReady" xml:space="preserve"><value>Служба не готова.</value></data>
+  <data name="RefreshUnknownStatus" xml:space="preserve"><value>Не удалось определить состояние. Сначала обновите состояние службы.</value></data>
+  <data name="SelectServer" xml:space="preserve"><value>Добавьте или выберите сервер.</value></data>
+  <data name="WaitingDisconnect" xml:space="preserve"><value>Ожидаем подтверждение отключения от службы…</value></data>
+  <data name="WaitingConnect" xml:space="preserve"><value>Ожидаем ответ службы на запрос подключения…</value></data>
+  <data name="DisconnectCompleted" xml:space="preserve"><value>Команда отключения выполнена.</value></data>
+  <data name="ConnectRequested" xml:space="preserve"><value>Запрос на подключение передан службе.</value></data>
+  <data name="CommandRejected" xml:space="preserve"><value>Служба отклонила команду.</value></data>
+  <data name="StorageReadOnly" xml:space="preserve"><value>Запись отключена: сначала восстановите доступ к исходному файлу профилей.</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Не удалось сохранить данные. Предыдущие настройки сохранены, черновик остаётся в окне.</value></data>
+  <data name="ProfileTooLarge" xml:space="preserve"><value>Профиль слишком большой для подключения. Сократите список правил или размер сертификата.</value></data>
+  <data name="InvalidProfile" xml:space="preserve"><value>Проверьте поля подключения: конфигурация некорректна.</value></data>
+  <data name="ProfileSaved" xml:space="preserve"><value>Сохранено. Изменения применятся при следующем подключении.</value></data>
+  <data name="FillServerHint" xml:space="preserve"><value>Укажите параметры сервера и нажмите «Сохранить».</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Настройки приложения сохранены.</value></data>
+  <data name="LanguageSaved" xml:space="preserve"><value>Язык интерфейса сохранён.</value></data>
+  <data name="DisconnectBeforeDelete" xml:space="preserve"><value>Сначала отключите активное подключение.</value></data>
+  <data name="DeleteProfilePrompt" xml:space="preserve"><value>Удалить выбранный профиль и его несохранённые изменения?</value></data>
+  <data name="DeleteProfileTitle" xml:space="preserve"><value>Tunnela — удаление профиля</value></data>
+  <data name="ProfileDeleted" xml:space="preserve"><value>Профиль удалён.</value></data>
+  <data name="ConfigurationTooLarge" xml:space="preserve"><value>Конфигурация слишком большая (не более 256 КиБ).</value></data>
+  <data name="ImportFailedPrefix" xml:space="preserve"><value>Импорт не выполнен. </value></data>
+  <data name="ImportDraft" xml:space="preserve"><value>Конфигурация импортирована в черновик. Проверьте поля и нажмите «Сохранить».</value></data>
+  <data name="ProfilesUnchangedSuffix" xml:space="preserve"><value> Существующие профили не изменены.</value></data>
+  <data name="ImportUnsupported" xml:space="preserve"><value>Импорт не выполнен: данные не являются поддерживаемой конфигурацией TrustTunnel. Существующие профили не изменены.</value></data>
+  <data name="ImportFileTitle" xml:space="preserve"><value>Tunnela — импорт конфигурации TrustTunnel</value></data>
+  <data name="ImportFileFilter" xml:space="preserve"><value>Конфигурация TOML (*.toml)|*.toml|Текстовые файлы (*.txt)|*.txt</value></data>
+  <data name="FileTooLarge" xml:space="preserve"><value>Файл слишком большой (не более 256 КиБ).</value></data>
+  <data name="FileReadFailed" xml:space="preserve"><value>Не удалось прочитать файл. Существующие профили не изменены.</value></data>
+  <data name="LogsUnavailable" xml:space="preserve"><value>Журнал недоступен.</value></data>
+  <data name="LogsUpdated" xml:space="preserve"><value>Журнал обновлён. Пароли и конфигурации в отчёт не включаются.</value></data>
+  <data name="ExportTitle" xml:space="preserve"><value>Tunnela — сохранить диагностический отчёт</value></data>
+  <data name="ExportFilter" xml:space="preserve"><value>Текстовый отчёт (*.txt)|*.txt</value></data>
+  <data name="ReportTitle" xml:space="preserve"><value>Tunnela — диагностический отчёт</value></data>
+  <data name="ReportDate" xml:space="preserve"><value>Дата: {0}</value></data>
+  <data name="ReportService" xml:space="preserve"><value>Служба: {0}</value></data>
+  <data name="ReportState" xml:space="preserve"><value>Состояние: {0}</value></data>
+  <data name="ReportProcess" xml:space="preserve"><value>Процесс: {0}</value></data>
+  <data name="ReportEngine" xml:space="preserve"><value>Движок: {0}</value></data>
+  <data name="ReportPrivacy" xml:space="preserve"><value>Профили, адреса, пароли и конфигурации в отчёт не включены.</value></data>
+  <data name="ReportSaved" xml:space="preserve"><value>Диагностический отчёт сохранён. Его можно проверить перед передачей.</value></data>
+  <data name="ReportSaveFailed" xml:space="preserve"><value>Не удалось сохранить диагностический отчёт.</value></data>
+  <data name="Redacted" xml:space="preserve"><value>[скрыто]</value></data>
+  <data name="CommandInProgress" xml:space="preserve"><value>Команда ещё выполняется. Дождитесь ответа или выберите в трее «Закрыть интерфейс…».</value></data>
+  <data name="UnsavedExitPrompt" xml:space="preserve"><value>Есть несохранённые изменения. Выйти без их сохранения?</value></data>
+  <data name="DisconnectBeforeExit" xml:space="preserve"><value>Отключаем VPN перед выходом. Если нужно закрыть только окно, используйте «Закрыть интерфейс…» в трее.</value></data>
+  <data name="DisconnectNotConfirmed" xml:space="preserve"><value>Служба пока не подтвердила отключение. Приложение остаётся открытым.</value></data>
+  <data name="UnavailableExitPrompt" xml:space="preserve"><value>Служба недоступна: отключение VPN не подтверждено. Закрыть только интерфейс Tunnela? Состояние подключения останется неизвестным.</value></data>
+  <data name="UnconfirmedExitPrompt" xml:space="preserve"><value>Служба не подтвердила штатное отключение VPN. Закрыть только интерфейс Tunnela? Процесс VPN может продолжать работать; его состояние и очистка сети не подтверждены.</value></data>
+  <data name="ExitTitle" xml:space="preserve"><value>Tunnela — выход</value></data>
+  <data name="CloseInterfacePrompt" xml:space="preserve"><value>Закрыть только интерфейс Tunnela? Команда отключения VPN не будет отправлена. Если туннель работает, он может продолжить работу.</value></data>
+  <data name="PendingCommandSuffix" xml:space="preserve"><value>
+
+Уже отправленная команда службы может завершиться после закрытия окна.</value></data>
+  <data name="UnsavedChangesSuffix" xml:space="preserve"><value>
+
+Несохранённые изменения будут потеряны.</value></data>
+  <data name="BackgroundTitle" xml:space="preserve"><value>Tunnela работает в фоне</value></data>
+  <data name="BackgroundHint" xml:space="preserve"><value>Открыть окно или отключиться можно через значок в области уведомлений.</value></data>
+  <data name="ServiceNotInstalled" xml:space="preserve"><value>Служба Tunnela не установлена. Профили и интерфейс доступны без неё.</value></data>
+  <data name="ServiceNotRunning" xml:space="preserve"><value>Служба Tunnela не запущена. Профили и интерфейс доступны без неё.</value></data>
+</root>

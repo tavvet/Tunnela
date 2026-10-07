@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Validation.NameRequired" xml:space="preserve"><value>Enter a connection name.</value></data>
+  <data name="Validation.HostnameInvalid" xml:space="preserve"><value>Enter a valid server name for TLS verification.</value></data>
+  <data name="Validation.SniInvalid" xml:space="preserve"><value>Check the alternative TLS server name (SNI).</value></data>
+  <data name="Validation.AddressRequired" xml:space="preserve"><value>Enter at least one server address with a port.</value></data>
+  <data name="Validation.AddressInvalid" xml:space="preserve"><value>Server addresses must use host:port, IPv4:port, or [IPv6]:port.</value></data>
+  <data name="Validation.UsernameRequired" xml:space="preserve"><value>Enter a username.</value></data>
+  <data name="Validation.PasswordRequired" xml:space="preserve"><value>Enter a password.</value></data>
+  <data name="Validation.ProtocolInvalid" xml:space="preserve"><value>Only HTTP/2 and HTTP/3 are supported.</value></data>
+  <data name="Validation.RoutingModeInvalid" xml:space="preserve"><value>Select a routing mode.</value></data>
+  <data name="Validation.RulesMissing" xml:space="preserve"><value>The routing rule list is missing.</value></data>
+  <data name="Validation.RuleInvalid" xml:space="preserve"><value>Routing rule {0}: enter a domain, IP address, CIDR, or a supported rule with a port.</value></data>
+  <data name="Validation.DnsInvalid" xml:space="preserve"><value>Check the DNS addresses: IP, TCP, TLS, HTTPS, QUIC, and DNS Stamp are supported.</value></data>
+  <data name="Validation.RoutesInvalid" xml:space="preserve"><value>Interface routes must use CIDR notation.</value></data>
+  <data name="Validation.AllowedPortsInvalid" xml:space="preserve"><value>Allowed local ports must be between 1 and 65535.</value></data>
+  <data name="Validation.PreresolveCountInvalid" xml:space="preserve"><value>The number of DNS preresolution queries cannot be negative.</value></data>
+  <data name="Validation.ScannablePortsInvalid" xml:space="preserve"><value>Check the list of ports used to detect domains.</value></data>
+  <data name="Validation.MtuInvalid" xml:space="preserve"><value>MTU must be between 576 and 65535.</value></data>
+  <data name="Validation.TcpBufferInvalid" xml:space="preserve"><value>TCP buffer sizes cannot be negative.</value></data>
+  <data name="Validation.LogLevelInvalid" xml:space="preserve"><value>The client log level is not recognized.</value></data>
+  <data name="Validation.InterfaceNameInvalid" xml:space="preserve"><value>The network interface name contains invalid characters.</value></data>
+  <data name="Validation.ClientRandomInvalid" xml:space="preserve"><value>Check TLS client_random: enter a hexadecimal prefix and an optional hexadecimal mask.</value></data>
+  <data name="Validation.CertificateInvalid" xml:space="preserve"><value>The PEM certificate chain could not be read.</value></data>
+  <data name="Import.SizeInvalid" xml:space="preserve"><value>The configuration is empty or exceeds the 1 MiB limit.</value></data>
+  <data name="Import.TomlSyntaxInvalid" xml:space="preserve"><value>Invalid TOML syntax. Check the source file.</value></data>
+  <data name="Import.TomlReadFailed" xml:space="preserve"><value>The TOML configuration could not be read. Check the source file.</value></data>
+  <data name="Import.CertificateVerificationDisabled" xml:space="preserve"><value>Configurations with certificate verification disabled cannot be imported.</value></data>
+  <data name="Import.SniAmbiguous" xml:space="preserve"><value>The hostname and custom_sni settings are ambiguous.</value></data>
+  <data name="Import.DnsAmbiguous" xml:space="preserve"><value>Two sections specify different DNS settings. Resolve the conflict before importing.</value></data>
+  <data name="Import.RoutingModeInvalid" xml:space="preserve"><value>The routing mode is not recognized.</value></data>
+  <data name="Import.SocksUnsupported" xml:space="preserve"><value>SOCKS configurations are not supported yet. Import a TUN configuration or a server export.</value></data>
+  <data name="Import.ExistingTunUnsupported" xml:space="preserve"><value>The Windows client does not support using an existing TUN device.</value></data>
+  <data name="Import.UnsupportedSettings" xml:space="preserve"><value>The configuration contains settings this version cannot preserve. Import was cancelled without changing any profiles.</value></data>
+  <data name="Import.SectionMissing" xml:space="preserve"><value>The configuration is missing the {0} section.</value></data>
+  <data name="Import.ParameterMissing" xml:space="preserve"><value>The configuration is missing the {0} parameter.</value></data>
+  <data name="Import.ParameterTypeInvalid" xml:space="preserve"><value>The {0} parameter has an invalid value type.</value></data>
+  <data name="Link.Invalid" xml:space="preserve"><value>The connection link is damaged or contains invalid data.</value></data>
+  <data name="Link.SizeInvalid" xml:space="preserve"><value>The link is empty or exceeds the 1 MiB limit.</value></data>
+  <data name="Link.SchemeInvalid" xml:space="preserve"><value>Enter a TrustTunnel link starting with tt://?.</value></data>
+  <data name="Link.EncodingInvalid" xml:space="preserve"><value>The TrustTunnel link has invalid encoding.</value></data>
+  <data name="Link.VersionUnsupported" xml:space="preserve"><value>This TrustTunnel link version is not supported yet.</value></data>
+  <data name="Link.SubscriptionUnsupported" xml:space="preserve"><value>Subscription links are not supported yet. Export a static connection or a server TOML file.</value></data>
+  <data name="Link.ProtocolInvalid" xml:space="preserve"><value>The link uses an unrecognized connection protocol.</value></data>
+  <data name="Link.ParametersMissing" xml:space="preserve"><value>The link is missing required connection parameters.</value></data>
+  <data name="Link.BinaryInvalid" xml:space="preserve"><value>The connection link contains malformed binary data.</value></data>
+  <data name="Service.Disconnected" xml:space="preserve"><value>VPN is disconnected.</value></data>
+  <data name="Service.RecoveredProcessUnknown" xml:space="preserve"><value>A previous VPN process was found. Its connection state is unknown; disconnect it before starting a new connection.</value></data>
+  <data name="Service.UnownedEngine" xml:space="preserve"><value>A VPN process was found without verified ownership. Automatic control is blocked.</value></data>
+  <data name="Service.OwnershipCheckFailed" xml:space="preserve"><value>The previous VPN process could not be verified. Check the installation.</value></data>
+  <data name="Service.Ready" xml:space="preserve"><value>The control service is ready. Automatic connection is disabled.</value></data>
+  <data name="Service.ProfileMissing" xml:space="preserve"><value>No profile was provided.</value></data>
+  <data name="Service.ProfileInvalid" xml:space="preserve"><value>The profile contains invalid settings. Check the connection settings.</value></data>
+  <data name="Service.ProfilePreparationFailed" xml:space="preserve"><value>The profile configuration could not be prepared.</value></data>
+  <data name="Service.ShuttingDown" xml:space="preserve"><value>The service is shutting down; a new connection cannot be started.</value></data>
+  <data name="Service.OwnershipUnconfirmed" xml:space="preserve"><value>Ownership of the previous VPN process has not been verified.</value></data>
+  <data name="Service.AlreadyRunning" xml:space="preserve"><value>Disconnect the current connection and wait for its process to exit first.</value></data>
+  <data name="Service.EngineVerificationFailed" xml:space="preserve"><value>TrustTunnel files are missing or failed installation verification.</value></data>
+  <data name="Service.DuplicateEngineBlocked" xml:space="preserve"><value>A TrustTunnel process from this installation is already running. A second process was blocked.</value></data>
+  <data name="Service.ProcessStarted" xml:space="preserve"><value>The process has started. Waiting for TrustTunnel to confirm the VPN connection.</value></data>
+  <data name="Service.EngineStarted" xml:space="preserve"><value>The TrustTunnel process has started. The connection is not confirmed yet.</value></data>
+  <data name="Service.EngineStartFailed" xml:space="preserve"><value>TrustTunnel could not be started. Check the installation and service permissions.</value></data>
+  <data name="Service.UnsafeProcessControl" xml:space="preserve"><value>The process cannot be controlled safely without verified ownership.</value></data>
+  <data name="Service.Disconnecting" xml:space="preserve"><value>Waiting for TrustTunnel to exit normally.</value></data>
+  <data name="Service.DisconnectRequested" xml:space="preserve"><value>A graceful VPN disconnect was requested.</value></data>
+  <data name="Service.EngineSignalFailed" xml:space="preserve"><value>The stop signal could not be delivered. The VPN process may still be running.</value></data>
+  <data name="Service.StopTimedOut" xml:space="preserve"><value>TrustTunnel did not exit within 15 seconds. It was not forcibly stopped; the VPN state is unknown.</value></data>
+  <data name="Service.StopUnconfirmed" xml:space="preserve"><value>A graceful disconnect was not confirmed. The VPN process may still be running.</value></data>
+  <data name="Service.EngineOutputUnavailable" xml:space="preserve"><value>The TrustTunnel status stream was lost. The process exists, but the VPN connection is not confirmed.</value></data>
+  <data name="Service.Connected" xml:space="preserve"><value>TrustTunnel confirmed the VPN connection.</value></data>
+  <data name="Service.Connecting" xml:space="preserve"><value>TrustTunnel is connecting to the server.</value></data>
+  <data name="Service.Reconnecting" xml:space="preserve"><value>The connection was lost. TrustTunnel is waiting for the network or trying to reconnect.</value></data>
+  <data name="Service.EngineDisconnected" xml:space="preserve"><value>TrustTunnel reported a disconnection. Waiting for the process to exit.</value></data>
+  <data name="Service.Unknown" xml:space="preserve"><value>The VPN state is unknown.</value></data>
+  <data name="Service.RuntimeCleanupFailed" xml:space="preserve"><value>The temporary configuration could not be deleted. It remains accessible only to SYSTEM and administrators.</value></data>
+  <data name="Service.ProcessStopped" xml:space="preserve"><value>The TrustTunnel process has exited. VPN is disconnected.</value></data>
+  <data name="Service.ProcessExited" xml:space="preserve"><value>The TrustTunnel process exited. VPN is not connected.</value></data>
+  <data name="Service.ConnectionUnconfirmed" xml:space="preserve"><value>The connection was not confirmed within 30 seconds. The process is running; wait for a response or disconnect it.</value></data>
+  <data name="Service.ProtocolVersionMismatch" xml:space="preserve"><value>The control protocol version is incompatible.</value></data>
+  <data name="Service.CommandUnknown" xml:space="preserve"><value>The control command is not recognized.</value></data>
+  <data name="Service.ScmRequired" xml:space="preserve"><value>This executable must be installed and started by Windows Service Control Manager.</value></data>
+  <data name="Service.StartupFailed" xml:space="preserve"><value>Tunnela service startup failed. Check the protected installation configuration.</value></data>
+  <data name="Service.SignalHelperUnavailable" xml:space="preserve"><value>The signal helper is unavailable.</value></data>
+  <data name="Service.RequestIncomplete" xml:space="preserve"><value>The request is incomplete.</value></data>
+  <data name="Service.RequestTooLarge" xml:space="preserve"><value>The request is too large.</value></data>
+  <data name="Service.SystemIdentityRequired" xml:space="preserve"><value>The service identity must be LocalSystem.</value></data>
+  <data name="Service.InstallLocationRequired" xml:space="preserve"><value>The dedicated Tunnela Program Files location is required.</value></data>
+  <data name="Service.InstallConfigTooLarge" xml:space="preserve"><value>The installation configuration is too large.</value></data>
+  <data name="Service.InstallConfigMissing" xml:space="preserve"><value>The installation configuration is missing.</value></data>
+  <data name="Service.ControllerSidRequired" xml:space="preserve"><value>A controller account SID is required.</value></data>
+  <data name="Service.EngineManifestUnsupported" xml:space="preserve"><value>The engine manifest is not supported.</value></data>
+  <data name="Service.ReparsePointForbidden" xml:space="preserve"><value>Reparse points are not allowed in protected paths.</value></data>
+  <data name="Service.ProtectedFileMissing" xml:space="preserve"><value>A protected file is missing or redirected.</value></data>
+  <data name="Service.ProtectedFileWritable" xml:space="preserve"><value>A protected file allows writes by a non-administrator.</value></data>
+  <data name="Service.ProtectedOwnerRequired" xml:space="preserve"><value>A protected file must have a trusted owner.</value></data>
+  <data name="Service.OwnershipRecordInvalid" xml:space="preserve"><value>The engine ownership record is invalid.</value></data>
+</root>

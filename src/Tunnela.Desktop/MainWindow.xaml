@@ -1,0 +1,148 @@
+<Window x:Class="Tunnela.Desktop.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Tunnela.Desktop.Localization"
+        Title="{loc:Loc ViewProductName}" Icon="Assets/Tunnela.ico" Width="1040" Height="740" MinWidth="920" MinHeight="620" WindowStartupLocation="CenterScreen"
+        Background="{StaticResource PageBrush}" Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI" FontSize="14" UseLayoutRounding="True" SnapsToDevicePixels="True" Closing="Window_Closing">
+  <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="208" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+    <Border Background="#0B121C" BorderBrush="#253244" BorderThickness="0,0,1,0">
+      <DockPanel Margin="16,24,16,20">
+        <StackPanel DockPanel.Dock="Top" Margin="6,0,0,24"><TextBlock Text="{loc:Loc ViewBrandName}" FontSize="18" FontWeight="Bold" /><TextBlock Text="{loc:Loc ViewPlatform}" Style="{StaticResource Muted}" Margin="0,6,0,0" FontSize="12" /></StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Margin="6,16,0,0"><TextBlock Text="{loc:Loc ViewDeviceConnection}" Style="{StaticResource Muted}" /><TextBlock Text="{loc:Loc ViewServiceRole}" Style="{StaticResource Muted}" Margin="0,6,0,0" FontSize="12" /></StackPanel>
+        <ListBox SelectedIndex="{Binding Page, Mode=TwoWay}" Background="Transparent" BorderThickness="0" Padding="0" Foreground="{StaticResource TextBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <ListBox.ItemContainerStyle>
+            <Style TargetType="ListBoxItem">
+              <Setter Property="Padding" Value="12,8" />
+              <Setter Property="MinHeight" Value="38" />
+              <Setter Property="Margin" Value="0,2" />
+              <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+              <Setter Property="VerticalContentAlignment" Value="Center" />
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="ListBoxItem">
+                    <!-- Reserve the border in every state: hover/focus must not change item geometry. -->
+                    <Border x:Name="Item" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="5" Padding="{TemplateBinding Padding}">
+                      <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="IsSelected" Value="True"><Setter TargetName="Item" Property="Background" Value="#203D41" /><Setter Property="Foreground" Value="#7DE5D3" /></Trigger>
+                      <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Item" Property="BorderBrush" Value="#476579" /></Trigger>
+                      <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Item" Property="BorderBrush" Value="{StaticResource AccentBrush}" /></Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </ListBox.ItemContainerStyle>
+          <ListBoxItem Content="{loc:Loc ViewConnection}" /><ListBoxItem Content="{loc:Loc ViewServers}" /><ListBoxItem Content="{loc:Loc ViewRouting}" /><ListBoxItem Content="{loc:Loc ViewSettings}" /><ListBoxItem Content="{loc:Loc ViewDiagnostics}" />
+        </ListBox>
+      </DockPanel>
+    </Border>
+    <Grid Grid.Column="1" Margin="24,22,24,20">
+      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+      <Grid Margin="0,0,0,16"><TextBlock Text="{loc:Loc ViewPersonalConnection}" Style="{StaticResource Muted}" VerticalAlignment="Center" /><Border HorizontalAlignment="Right" Background="#1E2D3E" CornerRadius="10" Padding="10,4"><TextBlock Text="{loc:Loc ViewEngineBadge}" FontSize="12" Foreground="{StaticResource MutedBrush}" /></Border></Grid>
+      <TabControl Grid.Row="1" SelectedIndex="{Binding Page, Mode=TwoWay}" Background="Transparent" BorderThickness="0">
+        <TabControl.Resources><Style TargetType="TabItem"><Setter Property="Visibility" Value="Collapsed" /></Style></TabControl.Resources>
+        <TabItem>
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+              <TextBlock Text="{loc:Loc ViewConnection}" FontSize="24" FontWeight="SemiBold" />
+              <TextBlock Text="{loc:Loc ViewConnectionTagline}" Style="{StaticResource Muted}" Margin="0,6,0,18" />
+              <Border Style="{StaticResource Card}" Padding="22">
+                <StackPanel>
+                  <TextBlock Text="{loc:Loc ViewVpnStatus}" Foreground="{StaticResource AccentBrush}" FontSize="12" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding StatusTitle}" FontSize="28" FontWeight="SemiBold" Margin="0,10,0,8" />
+                  <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Muted}" MinHeight="40" />
+                  <TextBlock Text="{Binding ActiveProfileText}" Foreground="{StaticResource AccentBrush}" Margin="0,6,0,0" />
+                  <Separator Background="{StaticResource LineBrush}" Margin="0,16,0,10" />
+                  <TextBlock Text="{loc:Loc ViewNextConnectionServer}" Style="{StaticResource Label}" />
+                  <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding Selected, Mode=TwoWay}" ItemTemplate="{StaticResource ProfileChoiceTemplate}" TextSearch.TextPath="DisplayName" IsEnabled="{Binding CanInteract}" AutomationProperties.Name="{loc:Loc ViewConnectionServerAccess}" />
+                  <TextBlock Text="{Binding SelectedName}" Style="{StaticResource Muted}" Margin="0,6,0,14" />
+                  <WrapPanel><Button Content="{Binding ConnectText}" Style="{StaticResource Primary}" MinWidth="148" Click="Connect_Click" IsEnabled="{Binding CanInteract}" /><Button Content="{loc:Loc ViewRefreshStatus}" Margin="8,0,0,0" Click="Refresh_Click" IsEnabled="{Binding CanInteract}" /></WrapPanel>
+                </StackPanel>
+              </Border>
+              <Grid Margin="0,14,0,0"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+                <Border Style="{StaticResource Card}" Margin="0,0,8,0"><StackPanel><TextBlock Text="{loc:Loc ViewControlService}" Style="{StaticResource Muted}" /><TextBlock Text="{Binding ServiceText}" Margin="0,8,0,0" FontSize="18" /></StackPanel></Border>
+                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0"><StackPanel><TextBlock Text="{loc:Loc ViewClientProcess}" Style="{StaticResource Muted}" /><TextBlock Text="{Binding ProcessText}" Margin="0,8,0,0" FontSize="18" /></StackPanel></Border>
+              </Grid>
+              <TextBlock Text="{loc:Loc ViewConnectionStateHint}" Style="{StaticResource Muted}" Margin="2,16,0,0" />
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+        <TabItem>
+          <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition /></Grid.RowDefinitions>
+            <TextBlock Text="{loc:Loc ViewServers}" FontSize="24" FontWeight="SemiBold" />
+            <WrapPanel Grid.Row="1" Margin="0,14,0,16" IsEnabled="{Binding CanInteract}"><Button Content="{loc:Loc ViewAdd}" Click="Add_Click" /><Button Content="{loc:Loc ViewImportToml}" Click="Import_Click" Margin="8,0,0,0" /><Button Content="{loc:Loc ViewPasteConfiguration}" Click="PasteImport_Click" Margin="8,0,0,0" /></WrapPanel>
+            <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition Width="172" /><ColumnDefinition Width="16" /><ColumnDefinition /></Grid.ColumnDefinitions>
+              <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding Selected, Mode=TwoWay}" DisplayMemberPath="DisplayName" Background="#172231" Foreground="{StaticResource TextBrush}" BorderBrush="{StaticResource LineBrush}" Padding="8" IsEnabled="{Binding CanInteract}" AutomationProperties.Name="{loc:Loc ViewServerListAccess}" />
+              <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel IsEnabled="{Binding HasProfile}">
+                  <TextBlock Text="{loc:Loc ViewConnectionSettings}" FontSize="18" FontWeight="SemiBold" />
+                  <TextBlock Text="{loc:Loc ViewDraftHint}" Style="{StaticResource Muted}" Margin="0,8,0,0" />
+                  <TextBlock Text="{loc:Loc ViewName}" Style="{StaticResource Label}" /><TextBox Text="{Binding Selected.Name, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{loc:Loc ViewConnectionNameAccess}" />
+                  <TextBlock Text="{loc:Loc ViewCertificateHostname}" Style="{StaticResource Label}" /><TextBox Text="{Binding Selected.Hostname, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{loc:Loc ViewHostnameAccess}" />
+                  <TextBlock Text="{loc:Loc ViewAddresses}" Style="{StaticResource Label}" /><TextBox Text="{Binding Selected.Addresses, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="66" AutomationProperties.Name="{loc:Loc ViewAddressesAccess}" /><TextBlock Text="{loc:Loc ViewAddressExample}" Style="{StaticResource Muted}" Margin="0,5,0,0" FontSize="12" />
+                  <TextBlock Text="{loc:Loc ViewUsername}" Style="{StaticResource Label}" /><TextBox Text="{Binding Selected.Username, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{loc:Loc ViewUsername}" />
+                  <TextBlock Text="{loc:Loc ViewPassword}" Style="{StaticResource Label}" /><PasswordBox x:Name="ProfilePassword" PasswordChanged="Password_Changed" AutomationProperties.Name="{loc:Loc ViewConnectionPasswordAccess}" />
+                  <Expander Header="{loc:Loc ViewAdvancedParameters}" Foreground="{StaticResource TextBrush}" Margin="0,20,0,8">
+                    <StackPanel>
+                      <TextBlock Text="{loc:Loc ViewTransport}" Style="{StaticResource Label}" /><ComboBox SelectedValue="{Binding Selected.Protocol, Mode=TwoWay}" SelectedValuePath="Tag"><ComboBoxItem Content="{loc:Loc ViewHttp2}" Tag="http2" ContentTemplate="{StaticResource ProtocolChoiceTemplate}" /><ComboBoxItem Content="{loc:Loc ViewHttp3}" Tag="http3" ContentTemplate="{StaticResource ProtocolChoiceTemplate}" /></ComboBox>
+                      <CheckBox Content="{loc:Loc ViewServerIpv6}" IsChecked="{Binding Selected.Ipv6}" />
+                      <TextBlock Text="{loc:Loc ViewDns}" Style="{StaticResource Label}" /><TextBox Text="{Binding Selected.Dns, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="60" AutomationProperties.Name="{loc:Loc ViewDnsAccess}" />
+                      <TextBlock Text="{loc:Loc ViewCertificate}" Style="{StaticResource Label}" /><TextBox Text="{Binding Selected.Certificate, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="100" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="{loc:Loc ViewCertificateAccess}" />
+                      <CheckBox IsChecked="{Binding Selected.KillSwitch}"><TextBlock Text="{loc:Loc ViewKillSwitch}" /></CheckBox>
+                      <TextBlock Text="{loc:Loc ViewKillSwitchHint}" Style="{StaticResource Muted}" FontSize="12" />
+                    </StackPanel>
+                  </Expander>
+                  <WrapPanel Margin="0,18,0,16" IsEnabled="{Binding CanInteract}"><Button Content="{loc:Loc ViewSave}" Style="{StaticResource Primary}" Click="Save_Click" /><Button Content="{loc:Loc ViewDelete}" Click="Delete_Click" Margin="8,0,0,0" /></WrapPanel>
+                </StackPanel>
+              </ScrollViewer>
+            </Grid>
+          </Grid>
+        </TabItem>
+        <TabItem>
+          <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+            <TextBlock Text="{loc:Loc ViewRouting}" FontSize="24" FontWeight="SemiBold" /><TextBlock Text="{loc:Loc ViewRoutingProfileHint}" Style="{StaticResource Muted}" Margin="0,6,0,16" />
+            <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding Selected, Mode=TwoWay}" ItemTemplate="{StaticResource ProfileChoiceTemplate}" TextSearch.TextPath="DisplayName" Margin="0,0,0,16" IsEnabled="{Binding CanInteract}" AutomationProperties.Name="{loc:Loc ViewRoutingProfileAccess}" />
+            <Border Style="{StaticResource Card}" IsEnabled="{Binding HasProfile}"><StackPanel>
+              <TextBlock Text="{loc:Loc ViewRoutingTraffic}" FontSize="18" FontWeight="SemiBold" />
+              <RadioButton Content="{loc:Loc ViewGeneralRouting}" IsChecked="{Binding Selected.General, Mode=TwoWay}" GroupName="RouteMode" />
+              <RadioButton Content="{loc:Loc ViewSelectiveRouting}" IsChecked="{Binding Selected.Selective, Mode=TwoWay}" GroupName="RouteMode" />
+              <TextBlock Text="{Binding Selected.RoutingHint}" Style="{StaticResource Muted}" Margin="0,12,0,8" />
+              <TextBlock Text="{loc:Loc ViewRoutingRules}" Style="{StaticResource Label}" />
+              <TextBox Text="{Binding Selected.Rules, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="190" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" AutomationProperties.Name="{loc:Loc ViewRoutingRulesAccess}" />
+              <TextBlock Text="{loc:Loc ViewRoutingExamples}" Style="{StaticResource Muted}" Margin="0,10,0,0" />
+              <Button Content="{loc:Loc ViewSaveRules}" Style="{StaticResource Primary}" Click="Save_Click" HorizontalAlignment="Left" Margin="0,20,0,0" IsEnabled="{Binding CanInteract}" />
+              <TextBlock Text="{loc:Loc ViewReconnectHint}" Style="{StaticResource Muted}" Margin="0,10,0,0" />
+            </StackPanel></Border>
+          </StackPanel></ScrollViewer>
+        </TabItem>
+        <TabItem>
+          <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel><TextBlock Text="{loc:Loc ViewSettings}" FontSize="24" FontWeight="SemiBold" /><TextBlock Text="{loc:Loc ViewAppBehavior}" Style="{StaticResource Muted}" Margin="0,6,0,18" />
+            <Border Style="{StaticResource Card}">
+              <StackPanel>
+                <TextBlock Text="{loc:Loc ViewLanguage}" Style="{StaticResource Label}" Margin="0,0,0,7" />
+                <ComboBox Width="200" HorizontalAlignment="Left" SelectedValue="{Binding Language, Mode=TwoWay}" SelectedValuePath="Tag" AutomationProperties.Name="{loc:Loc ViewLanguage}">
+                  <ComboBoxItem Content="English" Tag="en" ContentTemplate="{StaticResource ProtocolChoiceTemplate}" />
+                  <ComboBoxItem Content="Русский" Tag="ru" ContentTemplate="{StaticResource ProtocolChoiceTemplate}" />
+                </ComboBox>
+                <TextBlock Text="{loc:Loc ViewLanguageHint}" Style="{StaticResource Muted}" FontSize="12" Margin="0,6,0,14" />
+                <CheckBox Content="{loc:Loc ViewMinimizeToTray}" IsChecked="{Binding MinimizeToTray}" />
+                <TextBlock Text="{loc:Loc ViewMinimizeToTrayHint}" Style="{StaticResource Muted}" Margin="0,10,0,0" />
+                <Button Content="{loc:Loc ViewSavePreferences}" Style="{StaticResource Primary}" Click="SavePreferences_Click" HorizontalAlignment="Left" Margin="0,20,0,0" IsEnabled="{Binding CanInteract}" />
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0"><StackPanel><TextBlock Text="{loc:Loc ViewDataStorage}" FontSize="18" /><TextBlock Text="{loc:Loc ViewDataStorageHint}" Style="{StaticResource Muted}" Margin="0,10,0,0" /></StackPanel></Border>
+          </StackPanel></ScrollViewer>
+        </TabItem>
+        <TabItem>
+          <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition /></Grid.RowDefinitions>
+            <TextBlock Text="{loc:Loc ViewDiagnostics}" FontSize="24" FontWeight="SemiBold" />
+            <TextBlock Grid.Row="1" Text="{Binding EngineText}" Style="{StaticResource Muted}" Margin="0,8,0,18" />
+            <WrapPanel Grid.Row="2" Margin="0,0,0,18" IsEnabled="{Binding CanInteract}"><Button Content="{loc:Loc ViewRefreshLogs}" Click="Logs_Click" /><Button Content="{loc:Loc ViewExportReport}" Click="Export_Click" Margin="8,0,0,0" /></WrapPanel>
+            <ListBox Grid.Row="3" ItemsSource="{Binding Logs}" Background="#0E1825" BorderBrush="{StaticResource LineBrush}" Foreground="{StaticResource TextBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" Padding="10"><ListBox.ItemTemplate><DataTemplate><StackPanel Margin="0,5"><TextBlock Text="{Binding Timestamp, StringFormat={}{0:dd.MM HH:mm:ss}}" Foreground="{StaticResource MutedBrush}" FontSize="11" /><TextBlock Text="{Binding Message}" FontFamily="Consolas" FontSize="12" /></StackPanel></DataTemplate></ListBox.ItemTemplate></ListBox>
+          </Grid>
+        </TabItem>
+      </TabControl>
+      <Border Grid.Row="2" Background="#253342" CornerRadius="6" Margin="0,16,0,0" Padding="12,9"><TextBlock Text="{Binding Notice}" FontSize="12" MinHeight="16" AutomationProperties.LiveSetting="Polite" /></Border>
+    </Grid>
+  </Grid>
+</Window>

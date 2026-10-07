@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Validation.NameRequired" xml:space="preserve"><value>Укажите название подключения.</value></data>
+  <data name="Validation.HostnameInvalid" xml:space="preserve"><value>Укажите корректное имя сервера для проверки TLS.</value></data>
+  <data name="Validation.SniInvalid" xml:space="preserve"><value>Проверьте дополнительное имя TLS (SNI).</value></data>
+  <data name="Validation.AddressRequired" xml:space="preserve"><value>Укажите хотя бы один адрес сервера с портом.</value></data>
+  <data name="Validation.AddressInvalid" xml:space="preserve"><value>Адрес сервера должен иметь вид host:port, IPv4:port или [IPv6]:port.</value></data>
+  <data name="Validation.UsernameRequired" xml:space="preserve"><value>Укажите имя пользователя.</value></data>
+  <data name="Validation.PasswordRequired" xml:space="preserve"><value>Укажите пароль.</value></data>
+  <data name="Validation.ProtocolInvalid" xml:space="preserve"><value>Поддерживаются только протоколы HTTP/2 и HTTP/3.</value></data>
+  <data name="Validation.RoutingModeInvalid" xml:space="preserve"><value>Выберите режим маршрутизации.</value></data>
+  <data name="Validation.RulesMissing" xml:space="preserve"><value>Список правил маршрутизации отсутствует.</value></data>
+  <data name="Validation.RuleInvalid" xml:space="preserve"><value>Правило маршрутизации № {0}: ожидается домен, IP, CIDR или допустимое правило с портом.</value></data>
+  <data name="Validation.DnsInvalid" xml:space="preserve"><value>Проверьте адреса DNS: поддерживаются IP, TCP, TLS, HTTPS, QUIC и DNS Stamp.</value></data>
+  <data name="Validation.RoutesInvalid" xml:space="preserve"><value>Маршруты интерфейса должны быть записаны в формате CIDR.</value></data>
+  <data name="Validation.AllowedPortsInvalid" xml:space="preserve"><value>Разрешённые локальные порты должны быть в диапазоне 1–65535.</value></data>
+  <data name="Validation.PreresolveCountInvalid" xml:space="preserve"><value>Число предварительных DNS-запросов не может быть отрицательным.</value></data>
+  <data name="Validation.ScannablePortsInvalid" xml:space="preserve"><value>Проверьте список портов для определения доменов.</value></data>
+  <data name="Validation.MtuInvalid" xml:space="preserve"><value>MTU должен быть в диапазоне 576–65535.</value></data>
+  <data name="Validation.TcpBufferInvalid" xml:space="preserve"><value>Размеры TCP-буферов не могут быть отрицательными.</value></data>
+  <data name="Validation.LogLevelInvalid" xml:space="preserve"><value>Неизвестный уровень журнала клиента.</value></data>
+  <data name="Validation.InterfaceNameInvalid" xml:space="preserve"><value>Имя сетевого интерфейса содержит недопустимые символы.</value></data>
+  <data name="Validation.ClientRandomInvalid" xml:space="preserve"><value>Проверьте TLS client_random: ожидается hex-префикс и необязательная hex-маска.</value></data>
+  <data name="Validation.CertificateInvalid" xml:space="preserve"><value>Не удалось прочитать цепочку сертификатов PEM.</value></data>
+  <data name="Import.SizeInvalid" xml:space="preserve"><value>Конфигурация пуста или превышает допустимый размер 1 МиБ.</value></data>
+  <data name="Import.TomlSyntaxInvalid" xml:space="preserve"><value>Некорректный синтаксис TOML. Проверьте исходный файл.</value></data>
+  <data name="Import.TomlReadFailed" xml:space="preserve"><value>Не удалось прочитать TOML. Проверьте исходный файл.</value></data>
+  <data name="Import.CertificateVerificationDisabled" xml:space="preserve"><value>Импорт конфигураций с отключённой проверкой сертификата не поддерживается.</value></data>
+  <data name="Import.SniAmbiguous" xml:space="preserve"><value>Неоднозначная настройка hostname и custom_sni.</value></data>
+  <data name="Import.DnsAmbiguous" xml:space="preserve"><value>DNS указан одновременно в двух разделах с разными значениями. Устраните неоднозначность перед импортом.</value></data>
+  <data name="Import.RoutingModeInvalid" xml:space="preserve"><value>Неизвестный режим маршрутизации.</value></data>
+  <data name="Import.SocksUnsupported" xml:space="preserve"><value>SOCKS-конфигурации пока не поддерживаются. Импортируйте конфигурацию TUN или экспорт сервера.</value></data>
+  <data name="Import.ExistingTunUnsupported" xml:space="preserve"><value>Использование существующего TUN-устройства не поддерживается Windows-клиентом.</value></data>
+  <data name="Import.UnsupportedSettings" xml:space="preserve"><value>Конфигурация содержит параметры, которые эта версия приложения не умеет сохранять. Импорт отменён без изменения профилей.</value></data>
+  <data name="Import.SectionMissing" xml:space="preserve"><value>В конфигурации отсутствует раздел {0}.</value></data>
+  <data name="Import.ParameterMissing" xml:space="preserve"><value>В конфигурации отсутствует параметр {0}.</value></data>
+  <data name="Import.ParameterTypeInvalid" xml:space="preserve"><value>Неверный тип значения параметра {0}.</value></data>
+  <data name="Link.Invalid" xml:space="preserve"><value>Ссылка подключения повреждена или содержит некорректные данные.</value></data>
+  <data name="Link.SizeInvalid" xml:space="preserve"><value>Ссылка пуста или превышает допустимый размер 1 МиБ.</value></data>
+  <data name="Link.SchemeInvalid" xml:space="preserve"><value>Ожидается ссылка TrustTunnel, начинающаяся с tt://?.</value></data>
+  <data name="Link.EncodingInvalid" xml:space="preserve"><value>Некорректная кодировка ссылки TrustTunnel.</value></data>
+  <data name="Link.VersionUnsupported" xml:space="preserve"><value>Эта версия ссылки TrustTunnel пока не поддерживается.</value></data>
+  <data name="Link.SubscriptionUnsupported" xml:space="preserve"><value>Ссылки на подписку пока не поддерживаются. Экспортируйте статическое подключение или TOML сервера.</value></data>
+  <data name="Link.ProtocolInvalid" xml:space="preserve"><value>Ссылка использует неизвестный протокол подключения.</value></data>
+  <data name="Link.ParametersMissing" xml:space="preserve"><value>В ссылке отсутствуют обязательные параметры подключения.</value></data>
+  <data name="Link.BinaryInvalid" xml:space="preserve"><value>Ссылка подключения содержит повреждённые двоичные данные.</value></data>
+  <data name="Service.Disconnected" xml:space="preserve"><value>VPN отключён</value></data>
+  <data name="Service.RecoveredProcessUnknown" xml:space="preserve"><value>Обнаружен прежний процесс VPN. Состояние соединения неизвестно; отключите его перед новым подключением.</value></data>
+  <data name="Service.UnownedEngine" xml:space="preserve"><value>Обнаружен процесс VPN без подтверждения владения. Автоматическое управление заблокировано.</value></data>
+  <data name="Service.OwnershipCheckFailed" xml:space="preserve"><value>Не удалось проверить прежний процесс VPN. Нужна проверка установки.</value></data>
+  <data name="Service.Ready" xml:space="preserve"><value>Служба управления готова. Автоматическое подключение выключено.</value></data>
+  <data name="Service.ProfileMissing" xml:space="preserve"><value>Профиль не передан.</value></data>
+  <data name="Service.ProfileInvalid" xml:space="preserve"><value>Профиль содержит недопустимые параметры. Проверьте настройки подключения.</value></data>
+  <data name="Service.ProfilePreparationFailed" xml:space="preserve"><value>Не удалось подготовить конфигурацию профиля.</value></data>
+  <data name="Service.ShuttingDown" xml:space="preserve"><value>Служба завершает работу; новое подключение недоступно.</value></data>
+  <data name="Service.OwnershipUnconfirmed" xml:space="preserve"><value>Не подтверждено владение прежним процессом VPN.</value></data>
+  <data name="Service.AlreadyRunning" xml:space="preserve"><value>Сначала отключите текущее соединение и дождитесь завершения процесса.</value></data>
+  <data name="Service.EngineVerificationFailed" xml:space="preserve"><value>Файлы TrustTunnel отсутствуют или не прошли проверку установки.</value></data>
+  <data name="Service.DuplicateEngineBlocked" xml:space="preserve"><value>Уже работает процесс TrustTunnel из этой установки. Повторный запуск заблокирован.</value></data>
+  <data name="Service.ProcessStarted" xml:space="preserve"><value>Процесс запущен. Ожидание подтверждения VPN-соединения от TrustTunnel.</value></data>
+  <data name="Service.EngineStarted" xml:space="preserve"><value>Процесс TrustTunnel запущен. Соединение пока не подтверждено.</value></data>
+  <data name="Service.EngineStartFailed" xml:space="preserve"><value>Не удалось запустить TrustTunnel. Проверьте установку и права службы.</value></data>
+  <data name="Service.UnsafeProcessControl" xml:space="preserve"><value>Нельзя безопасно управлять процессом без подтверждения владения.</value></data>
+  <data name="Service.Disconnecting" xml:space="preserve"><value>Ожидание штатного завершения TrustTunnel.</value></data>
+  <data name="Service.DisconnectRequested" xml:space="preserve"><value>Запрошено штатное отключение VPN.</value></data>
+  <data name="Service.EngineSignalFailed" xml:space="preserve"><value>Не удалось передать сигнал остановки. Процесс VPN может продолжать работать.</value></data>
+  <data name="Service.StopTimedOut" xml:space="preserve"><value>TrustTunnel не завершился за 15 секунд. Процесс не был принудительно остановлен; состояние VPN неизвестно.</value></data>
+  <data name="Service.StopUnconfirmed" xml:space="preserve"><value>Штатное отключение не подтверждено. Процесс VPN может продолжать работать.</value></data>
+  <data name="Service.EngineOutputUnavailable" xml:space="preserve"><value>Поток состояния TrustTunnel потерян. Процесс существует, VPN-соединение не подтверждено.</value></data>
+  <data name="Service.Connected" xml:space="preserve"><value>TrustTunnel подтвердил VPN-соединение.</value></data>
+  <data name="Service.Connecting" xml:space="preserve"><value>TrustTunnel подключается к серверу.</value></data>
+  <data name="Service.Reconnecting" xml:space="preserve"><value>Соединение потеряно. TrustTunnel ожидает сеть или пытается восстановить связь.</value></data>
+  <data name="Service.EngineDisconnected" xml:space="preserve"><value>TrustTunnel сообщил об отключении. Ожидание завершения процесса.</value></data>
+  <data name="Service.Unknown" xml:space="preserve"><value>Состояние VPN неизвестно.</value></data>
+  <data name="Service.RuntimeCleanupFailed" xml:space="preserve"><value>Не удалось удалить временную конфигурацию. Она остаётся доступной только SYSTEM и администраторам.</value></data>
+  <data name="Service.ProcessStopped" xml:space="preserve"><value>Процесс TrustTunnel завершён. VPN отключён.</value></data>
+  <data name="Service.ProcessExited" xml:space="preserve"><value>Процесс TrustTunnel завершился. VPN не подключён.</value></data>
+  <data name="Service.ConnectionUnconfirmed" xml:space="preserve"><value>Соединение не подтверждено за 30 секунд. Процесс работает; можно дождаться ответа или отключить его.</value></data>
+  <data name="Service.ProtocolVersionMismatch" xml:space="preserve"><value>Несовместимая версия протокола управления.</value></data>
+  <data name="Service.CommandUnknown" xml:space="preserve"><value>Неизвестная команда управления.</value></data>
+  <data name="Service.ScmRequired" xml:space="preserve"><value>Этот файл должен быть установлен и запущен диспетчером служб Windows.</value></data>
+  <data name="Service.StartupFailed" xml:space="preserve"><value>Не удалось запустить службу Tunnela. Проверьте защищённую конфигурацию установки.</value></data>
+  <data name="Service.SignalHelperUnavailable" xml:space="preserve"><value>Вспомогательный процесс для передачи сигнала недоступен.</value></data>
+  <data name="Service.RequestIncomplete" xml:space="preserve"><value>Запрос не завершён.</value></data>
+  <data name="Service.RequestTooLarge" xml:space="preserve"><value>Запрос превышает допустимый размер.</value></data>
+  <data name="Service.SystemIdentityRequired" xml:space="preserve"><value>Служба должна работать от имени LocalSystem.</value></data>
+  <data name="Service.InstallLocationRequired" xml:space="preserve"><value>Служба должна находиться в выделенной папке Tunnela внутри Program Files.</value></data>
+  <data name="Service.InstallConfigTooLarge" xml:space="preserve"><value>Конфигурация установки превышает допустимый размер.</value></data>
+  <data name="Service.InstallConfigMissing" xml:space="preserve"><value>Отсутствует конфигурация установки.</value></data>
+  <data name="Service.ControllerSidRequired" xml:space="preserve"><value>Необходим SID учётной записи для управления службой.</value></data>
+  <data name="Service.EngineManifestUnsupported" xml:space="preserve"><value>Манифест движка не поддерживается.</value></data>
+  <data name="Service.ReparsePointForbidden" xml:space="preserve"><value>Точки повторной обработки запрещены в защищённых путях.</value></data>
+  <data name="Service.ProtectedFileMissing" xml:space="preserve"><value>Защищённый файл отсутствует или перенаправлен.</value></data>
+  <data name="Service.ProtectedFileWritable" xml:space="preserve"><value>Защищённый файл доступен для записи пользователю без прав администратора.</value></data>
+  <data name="Service.ProtectedOwnerRequired" xml:space="preserve"><value>У защищённого файла должен быть доверенный владелец.</value></data>
+  <data name="Service.OwnershipRecordInvalid" xml:space="preserve"><value>Запись владения процессом движка недействительна.</value></data>
+</root>

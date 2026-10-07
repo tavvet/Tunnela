@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="ViewProductName" xml:space="preserve"><value>Tunnela</value></data>
+  <data name="ViewBrandName" xml:space="preserve"><value>TUNNELA</value></data>
+  <data name="ViewPlatform" xml:space="preserve"><value>For Windows · TrustTunnel</value></data>
+  <data name="ViewDeviceConnection" xml:space="preserve"><value>Device-wide connection</value></data>
+  <data name="ViewServiceRole" xml:space="preserve"><value>A Windows service manages the network connection.</value></data>
+  <data name="ViewConnection" xml:space="preserve"><value>Connection</value></data>
+  <data name="ViewServers" xml:space="preserve"><value>Servers</value></data>
+  <data name="ViewRouting" xml:space="preserve"><value>Routing</value></data>
+  <data name="ViewSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="ViewDiagnostics" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="ViewPersonalConnection" xml:space="preserve"><value>Personal connection</value></data>
+  <data name="ViewEngineBadge" xml:space="preserve"><value>Windows · CLI 1.1.7</value></data>
+  <data name="ViewConnectionTagline" xml:space="preserve"><value>Your server. Your connection.</value></data>
+  <data name="ViewVpnStatus" xml:space="preserve"><value>VPN STATUS</value></data>
+  <data name="ViewNextConnectionServer" xml:space="preserve"><value>Server for the next connection</value></data>
+  <data name="ViewConnectionServerAccess" xml:space="preserve"><value>VPN server</value></data>
+  <data name="ViewRefreshStatus" xml:space="preserve"><value>Refresh status</value></data>
+  <data name="ViewControlService" xml:space="preserve"><value>Control service</value></data>
+  <data name="ViewClientProcess" xml:space="preserve"><value>Client process</value></data>
+  <data name="ViewConnectionStateHint" xml:space="preserve"><value>A running service or client process does not confirm that the VPN is connected.</value></data>
+  <data name="ViewAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="ViewImportToml" xml:space="preserve"><value>Import TOML</value></data>
+  <data name="ViewPasteConfiguration" xml:space="preserve"><value>Paste configuration</value></data>
+  <data name="ViewServerListAccess" xml:space="preserve"><value>Server list</value></data>
+  <data name="ViewConnectionSettings" xml:space="preserve"><value>Connection settings</value></data>
+  <data name="ViewDraftHint" xml:space="preserve"><value>Use the button below to save changes. Your draft remains when you switch pages.</value></data>
+  <data name="ViewName" xml:space="preserve"><value>Name</value></data>
+  <data name="ViewConnectionNameAccess" xml:space="preserve"><value>Connection name</value></data>
+  <data name="ViewCertificateHostname" xml:space="preserve"><value>Server name for certificate verification</value></data>
+  <data name="ViewHostnameAccess" xml:space="preserve"><value>Server name</value></data>
+  <data name="ViewAddresses" xml:space="preserve"><value>Connection addresses — one per line</value></data>
+  <data name="ViewAddressesAccess" xml:space="preserve"><value>Server IP addresses and ports</value></data>
+  <data name="ViewAddressExample" xml:space="preserve"><value>Format: 203.0.113.10:443 or [2001:db8::1]:443</value></data>
+  <data name="ViewUsername" xml:space="preserve"><value>Username</value></data>
+  <data name="ViewPassword" xml:space="preserve"><value>Password</value></data>
+  <data name="ViewConnectionPasswordAccess" xml:space="preserve"><value>Connection password</value></data>
+  <data name="ViewAdvancedParameters" xml:space="preserve"><value>Advanced settings</value></data>
+  <data name="ViewTransport" xml:space="preserve"><value>Transport</value></data>
+  <data name="ViewHttp2" xml:space="preserve"><value>HTTP/2</value></data>
+  <data name="ViewHttp3" xml:space="preserve"><value>HTTP/3</value></data>
+  <data name="ViewServerIpv6" xml:space="preserve"><value>Server supports IPv6</value></data>
+  <data name="ViewDns" xml:space="preserve"><value>DNS — one address per line</value></data>
+  <data name="ViewDnsAccess" xml:space="preserve"><value>DNS servers</value></data>
+  <data name="ViewCertificate" xml:space="preserve"><value>PEM certificate — if required by the server</value></data>
+  <data name="ViewCertificateAccess" xml:space="preserve"><value>Server certificate</value></data>
+  <data name="ViewKillSwitch" xml:space="preserve"><value>Block traffic if the connection drops (CLI kill switch)</value></data>
+  <data name="ViewKillSwitchHint" xml:space="preserve"><value>Protection after a client crash or service stop is not guaranteed. Check its behavior on your device.</value></data>
+  <data name="ViewSave" xml:space="preserve"><value>Save</value></data>
+  <data name="ViewDelete" xml:space="preserve"><value>Delete</value></data>
+  <data name="ViewRoutingProfileHint" xml:space="preserve"><value>Rules belong to the selected connection.</value></data>
+  <data name="ViewRoutingProfileAccess" xml:space="preserve"><value>Routing profile</value></data>
+  <data name="ViewRoutingTraffic" xml:space="preserve"><value>Which traffic to send through the VPN</value></data>
+  <data name="ViewGeneralRouting" xml:space="preserve"><value>All traffic except the list below</value></data>
+  <data name="ViewSelectiveRouting" xml:space="preserve"><value>Only addresses in the list below</value></data>
+  <data name="ViewRoutingRules" xml:space="preserve"><value>Domains, IP addresses and CIDR subnets — one rule per line</value></data>
+  <data name="ViewRoutingRulesAccess" xml:space="preserve"><value>Routing rules</value></data>
+  <data name="ViewRoutingExamples" xml:space="preserve"><value>Examples: example.org, 192.168.1.10, 10.0.0.0/8. Per-app routing is not supported.</value></data>
+  <data name="ViewSaveRules" xml:space="preserve"><value>Save rules</value></data>
+  <data name="ViewReconnectHint" xml:space="preserve"><value>Changes apply to the next connection.</value></data>
+  <data name="ViewAppBehavior" xml:space="preserve"><value>App behavior</value></data>
+  <data name="ViewMinimizeToTray" xml:space="preserve"><value>Keep the app in the notification area when the window is closed</value></data>
+  <data name="ViewMinimizeToTrayHint" xml:space="preserve"><value>The tunnel keeps running while the window is hidden. Choose “Disconnect and exit” from the tray menu to stop it.</value></data>
+  <data name="ViewSavePreferences" xml:space="preserve"><value>Save settings</value></data>
+  <data name="ViewDataStorage" xml:space="preserve"><value>Data storage</value></data>
+  <data name="ViewDataStorageHint" xml:space="preserve"><value>Profiles are encrypted by Windows and available to your account. Imported files remain in their original folder. This version does not connect automatically before Windows sign-in.</value></data>
+  <data name="ViewRefreshLogs" xml:space="preserve"><value>Refresh log</value></data>
+  <data name="ViewExportReport" xml:space="preserve"><value>Save report</value></data>
+  <data name="ViewImportTitle" xml:space="preserve"><value>Import configuration</value></data>
+  <data name="ViewImportHeading" xml:space="preserve"><value>Paste TOML or a tt:// link</value></data>
+  <data name="ViewImportHint" xml:space="preserve"><value>Static TrustTunnel links are supported. The data may contain a password. Importing does not change existing profiles.</value></data>
+  <data name="ViewImportInputAccess" xml:space="preserve"><value>TOML configuration or TrustTunnel link to import</value></data>
+  <data name="ViewCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ViewImport" xml:space="preserve"><value>Import</value></data>
+  <data name="ViewLanguage" xml:space="preserve"><value>Interface language</value></data>
+  <data name="ViewLanguageHint" xml:space="preserve"><value>Applies immediately and is saved automatically.</value></data>
+</root>

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Tunnela.Contracts/Tunnela.Contracts.csproj" />
+    <Project Path="src/Tunnela.Core/Tunnela.Core.csproj" />
+    <Project Path="src/Tunnela.Desktop/Tunnela.Desktop.csproj" />
+    <Project Path="src/Tunnela.Service/Tunnela.Service.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Tunnela.Core.Tests/Tunnela.Core.Tests.csproj" />
+    <Project Path="tests/Tunnela.Desktop.Tests/Tunnela.Desktop.Tests.csproj" />
+  </Folder>
+</Solution>

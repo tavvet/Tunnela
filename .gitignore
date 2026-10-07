@@ -1,0 +1,25 @@
+# Local toolchain and caches
+.tools/
+.cache/
+.artifacts/
+.packages/
+.nuget/
+
+# Build and IDE output
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+TestResults/
+
+# Local runtime data and credentials
+runtime/
+profiles.local.json
+*.log
+*.dmp
+
+# OS files
+.DS_Store
+Thumbs.db
