@@ -78,6 +78,25 @@ These checks are pending for a build containing the October 26 review fixes. Ste
 Get-Acl "$env:ProgramData\Tunnela\Service" | Format-List Owner, AccessToString
 ```
 
+### Starting with Windows
+
+These checks are pending for a build of the start-with-Windows branch. They do not require a VPN connection; keep the VPN disconnected throughout. Install that build first; the option is unavailable in a copy started from `.artifacts`.
+
+1. **Unavailable outside the installed copy.** Start `.artifacts\publish\tunnela\desktop\Tunnela.Desktop.exe` and open **Settings**. Expect the start option to be disabled with a hint that it is available only in the installed copy. Close that copy through **Close interface…**.
+2. **Turn it on.** Open the installed Tunnela from Start, go to **Settings**, and turn on **Start Tunnela in the notification area when I sign in to Windows**. Expect an immediate confirmation without pressing **Save settings**. In a normal PowerShell, this read-only command should show `"C:\Program Files\Tunnela\desktop\Tunnela.Desktop.exe" --tray`:
+
+```powershell
+Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name Tunnela | Select-Object -ExpandProperty Tunnela
+```
+
+3. **Sign-in start.** Close Tunnela through **Close interface…**, then sign out and sign in again (or restart Windows). Expect only the Tunnela tray icon, with no window and no balloon. Within a few seconds the icon tooltip should show the service status. The VPN must remain disconnected.
+4. **Open the running copy.** While it runs in the tray, start Tunnela from Start. Expect the existing window to open, with no "already running" message and no second tray icon. Repeat with the window already open: it should come to the front.
+5. **Windows Startup settings.** In Task Manager → **Startup apps**, disable Tunnela, then open Tunnela Settings. Expect the option to stay on with a hint that Windows turned the entry off. Sign out and in: Tunnela should not start. Re-enable it in Task Manager.
+6. **Turn it off.** In Settings, turn the option off. Expect a confirmation; the command in step 2 should then report that the `Tunnela` property does not exist. Sign out and in: Tunnela should not start.
+7. **Language.** Switch the interface language. The option label and hint should change; the option state must not.
+8. **Update while in the tray.** With the option on and Tunnela running only in the tray, run the installer. Expect a refusal that says Tunnela may be open only as a notification area icon and to choose **Close interface…**, before any service stop or file change. Close the interface and retry; the update should proceed.
+9. **Uninstall cleanup.** As the last step, with the option on, close the interface and uninstall Tunnela while signed in to the controller account. The command in step 2 should then report that the `Tunnela` property does not exist. If UAC used another administrator's account, record whether your entry was removed.
+
 ## Service without a connection
 
 1. Install the service following [INSTALL.md](INSTALL.md). The `Tunnela` service (`Tunnela VPN Service`) should be running and waiting for a command; `%ProgramFiles%\Tunnela\service\engine\trusttunnel_client.exe` must not start before connection. A process belonging to an existing client is not Tunnela's process.

@@ -66,6 +66,14 @@ If this approach fails the remaining integration checks, the official Windows ad
 
 A crash window remains between saving the process ownership record and resuming the process's main thread. If the service fails at that exact point, a suspended process may remain. Automatic resumption of such a process is not implemented. This failure scenario needs a separate solution before broad distribution; successful ordinary connection tests do not cover it.
 
+## Starting with Windows
+
+The service starts at boot through its Automatic SCM start type and waits idle. The GUI start at sign-in is a separate per-user choice, stored only as the `Tunnela` value under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, so Task Manager and Windows Settings can turn it off. [WindowsStartup.cs](../src/Tunnela.Desktop/WindowsStartup.cs) reads and writes that single value, and [StartupSetting.cs](../src/Tunnela.Desktop/StartupSetting.cs) keeps the Settings option in step with it; after a change it re-reads the entry only once the checkbox binding has finished updating. Only the installed copy in `%ProgramFiles%\Tunnela\desktop` can register itself, always with that fixed path and `--tray`.
+
+With `--tray`, [App.xaml.cs](../src/Tunnela.Desktop/App.xaml.cs) creates the window without showing it and starts status polling, so the tray reflects the service at once. Each GUI creates a per-session, per-user show event before taking the single-instance mutex. A later start without `--tray` passes its foreground right on with `AllowSetForegroundWindow`, signals that event and exits, and the running copy opens its window; without that right Windows would only flash the taskbar button. A later `--tray` start exits silently. If the running copy is in another Windows session, the "already running" message is shown instead. These decisions are in [SingleInstance.cs](../src/Tunnela.Desktop/SingleInstance.cs). The event carries no command other than showing the window.
+
+The uninstaller backend removes the `Tunnela` Run value for the account that approved UAC and, through `HKEY_USERS`, for the recorded controller SID when that hive is loaded. It compares only the quoted executable path, so the GUI's command arguments can change without breaking cleanup.
+
 ## Configuration and secrets
 
 Application profiles are the source of truth; TOML is generated to start the CLI. Unsupported import fields are rejected with an explanation to avoid silently losing settings. Certificate verification is never disabled automatically.
@@ -82,6 +90,6 @@ Diagnostics must contain only sanitized events. Original TOML and connection lin
 - Verify edge cases involving GUI exit, network changes, sleep, and service failure.
 - Separate reusable routing profiles from server profiles.
 - Sign the installer, verify supplied component signatures, and test recovery from installation and update failures. The current NSIS EXE implements best-effort rollback; that is not a guarantee of recovery under every failure.
-- After validating engine behavior, add application startup options and a consistent auto-connect policy.
+- After validating engine behavior, add a consistent auto-connect policy. Starting the GUI in the tray at sign-in exists; it never connects the VPN.
 
 The UI, a successful build, and configuration conversion tests do not replace these checks. See [build status](BUILD-STATUS.md) and [manual testing](TESTING.md) for current results and limitations.

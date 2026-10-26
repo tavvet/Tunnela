@@ -2,6 +2,18 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
+## Start with Windows — feature branch, October 26, 2026
+
+- **Service.** Unchanged: after an EXE installation it already starts with Windows (Automatic, not delayed) and waits idle. The development `install-dev.ps1` still registers Manual startup.
+- **GUI at sign-in.** New **Settings** option *Start Tunnela in the notification area when I sign in to Windows*. It writes or removes one per-user value, `Tunnela`, under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, with the fixed command `"%ProgramFiles%\Tunnela\desktop\Tunnela.Desktop.exe" --tray`. It applies immediately, is available only in the installed copy, and shows when Windows Startup settings have turned the entry off. It never connects the VPN.
+- **`--tray` start.** The window is created but not shown, and status polling starts at once. Starting Tunnela again from Start now opens the running copy's window through a per-session, per-user event instead of showing an "already running" message; it first passes its foreground right on with `AllowSetForegroundWindow`, so the window can come to the front. A second `--tray` start exits silently. If that event cannot be created, only this activation is lost.
+- **Uninstall.** After a successful uninstall, the backend removes the entry for the account that approved UAC and, when signed in, for the recorded controller account. Only an entry whose command starts with this installation's quoted executable path is removed, so the GUI's arguments can change without breaking cleanup. The NSIS script is unchanged.
+- **Updates.** With the option on, the GUI usually runs in the tray, so the installer refuses until **Close interface…** is chosen. Its message and the option's hint now say so; the installer still never closes the application itself.
+- **Review of this branch.** Fixed: foreground activation, second-instance decisions extracted into `SingleInstance` and covered by tests, the checkbox re-read deferred until the binding update ends (`StartupSetting`), controller-account cleanup, and the single command rule shared by the GUI and the uninstaller.
+- Release build: 0 warnings, 0 errors. 152 isolated tests passed, 0 skipped: 79 Core, 62 Desktop (32 new, using temporary registry keys under `HKCU\Software\Tunnela.Tests` that are deleted afterwards), 11 Service. 83 isolated installer assertions passed; their registry checks also use only such a temporary key. NSIS 3.13 compiled the installer with `/WX` and no warnings.
+- Foreground activation, the deferred checkbox refresh in a real WPF window, and cleanup in another loaded user hive are not verified by automated tests.
+- The branch build produces `.artifacts\installer\Tunnela-0.1.0-preview.4-Setup-x64.exe`, the same name as the tagged `v0.1.0-preview.4` release, although it contains this unreleased feature. Bump the version before publishing it. No application, installer, sign-in start, Windows service, or VPN was launched. See [the manual checks](TESTING.md#starting-with-windows).
+
 ## Review fixes — 0.1.0-preview.4, October 26, 2026
 
 - **Pipe accept loop.** A client that opened a pipe instance and closed it before the service accepted it made `WaitForConnectionAsync` throw `IOException` (ERROR_NO_DATA). The exception escaped `ControlPipeWorker`, which stops the .NET host; stopping the service requests a VPN disconnect. The loop now replaces only that pipe instance and keeps serving. A new isolated test reproduces the race on a private, randomly named local pipe, and a characterization test confirms the Windows behaviour.

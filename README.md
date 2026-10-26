@@ -34,6 +34,8 @@ Look for packaged builds in [Releases](https://github.com/tavvet/Tunnela/release
 
 The service starts with Windows but waits for a manual connection command. Closing the window to the tray keeps the tunnel running. Use **Disconnect and exit** to disconnect and quit; **Close interface…** closes only the GUI.
 
+To have the app ready in the tray after you sign in, turn on **Start Tunnela in the notification area when I sign in to Windows** in **Settings**. Only the tray icon appears, without the window; the VPN still connects only when you choose **Connect**.
+
 For installation, updates, and removal, see [INSTALL.md](docs/INSTALL.md). Uninstalling Tunnela preserves saved profiles. An existing TrustTunnel installation and its data are not automatically migrated or removed.
 
 ## Current limitations

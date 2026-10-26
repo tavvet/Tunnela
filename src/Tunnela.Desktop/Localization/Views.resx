@@ -79,4 +79,5 @@
   <data name="ViewImport" xml:space="preserve"><value>Import</value></data>
   <data name="ViewLanguage" xml:space="preserve"><value>Interface language</value></data>
   <data name="ViewLanguageHint" xml:space="preserve"><value>Applies immediately and is saved automatically.</value></data>
+  <data name="ViewStartWithWindows" xml:space="preserve"><value>Start Tunnela in the notification area when I sign in to Windows</value></data>
 </root>

@@ -122,9 +122,22 @@ If the service was installed by the earlier `install-dev.ps1` with Manual startu
 Start-Service Tunnela
 ```
 
+## Starting Tunnela with Windows
+
+The `Tunnela` service already starts with Windows after an EXE installation (Automatic startup) and stays idle. To have the GUI ready in the tray after sign-in, open the installed Tunnela from Start and turn on **Settings → Start Tunnela in the notification area when I sign in to Windows**. The change applies immediately; the **Save settings** button is not needed.
+
+- The option writes one per-user value, `Tunnela`, under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`: `"%ProgramFiles%\Tunnela\desktop\Tunnela.Desktop.exe" --tray`. No administrator rights are needed and other accounts are not affected.
+- `--tray` starts with only the notification-area icon; the window opens from the icon. Starting Tunnela again from Start opens the window of the running copy instead of a second copy.
+- The option is available only in the installed copy under `%ProgramFiles%\Tunnela\desktop`; a build or preview copy started from another folder cannot register itself.
+- If you turn Tunnela off in Task Manager or **Windows Settings → Apps → Startup**, Windows keeps the entry but does not start it. Tunnela shows this in Settings and does not override that choice.
+- Starting at sign-in never connects the VPN. Automatic connection remains unimplemented.
+- With the option on, Tunnela is usually running in the tray, so the installer refuses to update or uninstall until you choose **Close interface…** from the tray menu. The installer never closes the application for you.
+
 ## Uninstalling the EXE installation
 
 After successful basic checks, if needed, disconnect Tunnela, wait for the tunnel to stop, and close the GUI through the tray. Uninstall Tunnela through the Windows installed-apps list. Expect only the Tunnela program, shortcuts, and service to be removed; `%LOCALAPPDATA%\Tunnela\profiles.dat` remains. On reinstallation, select the same ordinary Windows account so the GUI can read its DPAPI profiles. Exporting passwords is not required for this step.
+
+After a successful uninstall, the sign-in start entry is removed for the account that approved UAC and for the controller account recorded at installation, when that entry still starts this installation. The controller's entry can be removed only while that account is signed in, because its registry hive is never loaded by the uninstaller. Otherwise the entry remains and points to the removed program; Windows then starts nothing for it. Turn the option off before uninstalling, or reinstall to make it work again.
 
 ## Updating and removing the development installation
 

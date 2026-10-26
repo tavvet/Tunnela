@@ -102,4 +102,10 @@
   <data name="BackgroundHint" xml:space="preserve"><value>Открыть окно или отключиться можно через значок в области уведомлений.</value></data>
   <data name="ServiceNotInstalled" xml:space="preserve"><value>Служба Tunnela не установлена. Профили и интерфейс доступны без неё.</value></data>
   <data name="ServiceNotRunning" xml:space="preserve"><value>Служба Tunnela не запущена. Профили и интерфейс доступны без неё.</value></data>
+  <data name="StartupHint" xml:space="preserve"><value>Применяется сразу. При входе появляется только значок в области уведомлений, без окна. Фоновая служба и так запускается вместе с Windows; VPN автоматически не подключается. Перед обновлением или удалением выберите «Закрыть интерфейс…» в меню значка.</value></data>
+  <data name="StartupHintNotInstalled" xml:space="preserve"><value>Доступно только в установленной копии Tunnela, открытой из меню «Пуск».</value></data>
+  <data name="StartupHintBlocked" xml:space="preserve"><value>Windows отключила этот автозапуск. Включите Tunnela в параметрах Windows: «Приложения» &gt; «Автозагрузка».</value></data>
+  <data name="StartupEnabled" xml:space="preserve"><value>Tunnela будет запускаться в области уведомлений при входе в Windows.</value></data>
+  <data name="StartupDisabled" xml:space="preserve"><value>Tunnela больше не будет запускаться при входе в Windows.</value></data>
+  <data name="StartupChangeFailed" xml:space="preserve"><value>Не удалось изменить параметр автозапуска Windows.</value></data>
 </root>

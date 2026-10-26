@@ -79,4 +79,5 @@
   <data name="ViewImport" xml:space="preserve"><value>Импортировать</value></data>
   <data name="ViewLanguage" xml:space="preserve"><value>Язык интерфейса</value></data>
   <data name="ViewLanguageHint" xml:space="preserve"><value>Применяется сразу и сохраняется автоматически.</value></data>
+  <data name="ViewStartWithWindows" xml:space="preserve"><value>Запускать Tunnela в области уведомлений при входе в Windows</value></data>
 </root>

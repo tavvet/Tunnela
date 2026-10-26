@@ -102,4 +102,10 @@ Unsaved changes will be lost.</value></data>
   <data name="BackgroundHint" xml:space="preserve"><value>Use the notification area icon to open the window or disconnect.</value></data>
   <data name="ServiceNotInstalled" xml:space="preserve"><value>The Tunnela service is not installed. You can still use the interface and configure profiles.</value></data>
   <data name="ServiceNotRunning" xml:space="preserve"><value>The Tunnela service is not running. You can still use the interface and configure profiles.</value></data>
+  <data name="StartupHint" xml:space="preserve"><value>Applies immediately. Only the tray icon appears at sign-in, without the window. The background service already starts with Windows; the VPN is not connected automatically. Before updating or uninstalling, choose Close interface… from the tray menu.</value></data>
+  <data name="StartupHintNotInstalled" xml:space="preserve"><value>Available only in the installed copy of Tunnela opened from the Start menu.</value></data>
+  <data name="StartupHintBlocked" xml:space="preserve"><value>Windows has turned off this startup entry. Turn Tunnela on in Windows Settings under Apps &gt; Startup.</value></data>
+  <data name="StartupEnabled" xml:space="preserve"><value>Tunnela will start in the notification area when you sign in to Windows.</value></data>
+  <data name="StartupDisabled" xml:space="preserve"><value>Tunnela will no longer start when you sign in to Windows.</value></data>
+  <data name="StartupChangeFailed" xml:space="preserve"><value>The Windows startup setting could not be changed.</value></data>
 </root>

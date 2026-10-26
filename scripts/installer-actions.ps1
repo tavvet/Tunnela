@@ -157,7 +157,7 @@ function Get-Activity {
 function Assert-Idle {
     $taskActivity = Get-Activity
     if ($taskActivity.TunnelRunning) { Fail-Installer 'Disconnect the VPN in Tunnela before continuing. The installer will not disconnect it for you.' }
-    if ($taskActivity.DesktopRunning) { Fail-Installer 'Close the Tunnela window and tray application before continuing. No service was stopped.' }
+    if ($taskActivity.DesktopRunning) { Fail-Installer 'Tunnela is still open, possibly only as a notification area icon after sign-in. Choose Close interface... from its tray menu, then retry. No service was stopped.' }
 }
 
 function Get-ExistingController {
@@ -424,7 +424,7 @@ function Invoke-Inspect {
         DesktopRunning = $taskActivity.DesktopRunning; TunnelRunning = $taskActivity.TunnelRunning
         ServiceState = if ($taskService) { $taskService.State } else { 'Absent' }
         CanProceed = -not ($taskActivity.DesktopRunning -or $taskActivity.TunnelRunning)
-        Message = if ($taskActivity.TunnelRunning) { 'Disconnect the Tunnela VPN and close Tunnela before continuing.' } elseif ($taskActivity.DesktopRunning) { 'Close the Tunnela window and tray application before continuing.' } else { 'Ready.' }
+        Message = if ($taskActivity.TunnelRunning) { 'Disconnect the Tunnela VPN and close Tunnela before continuing.' } elseif ($taskActivity.DesktopRunning) { 'Tunnela is still open, possibly only as a notification area icon after sign-in. Choose Close interface... from its tray menu, then retry.' } else { 'Ready.' }
     }
 }
 
@@ -479,8 +479,33 @@ function Invoke-Install([string]$Payload, [string]$Account) {
     return [pscustomobject]@{ Success = $true; RollbackComplete = $true; Message = $taskMessage }
 }
 
+function Remove-StartupEntry([Microsoft.Win32.RegistryKey]$Root, [string]$RunKeyPath) {
+    # Removes only a Tunnela value that starts this installation's GUI. Only the quoted executable path
+    # is compared, so a change to the GUI's arguments cannot make this cleanup silently stop matching.
+    $taskKey = $Root.OpenSubKey($RunKeyPath, $true)
+    if ($null -eq $taskKey) { return }  # No Run key, or that user's registry hive is not loaded.
+    try {
+        $taskValue = $taskKey.GetValue('Tunnela')
+        $taskPrefix = '"' + (Join-Path $script:InstallRoot 'desktop\Tunnela.Desktop.exe') + '"'
+        if ($taskValue -is [string] -and $taskValue.Trim().StartsWith($taskPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+            $taskKey.DeleteValue('Tunnela', $false)
+        }
+    } finally { $taskKey.Dispose() }
+}
+
+function Remove-StartupEntries([string]$ControllerSid) {
+    # The account that approved UAC and the controller account can differ. A signed-out controller's hive
+    # is not loaded and is never loaded here; that entry then stays and points to the removed program.
+    $taskRun = 'Software\Microsoft\Windows\CurrentVersion\Run'
+    Remove-StartupEntry ([Microsoft.Win32.Registry]::CurrentUser) $taskRun
+    $taskCurrent = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    if ($ControllerSid -and $ControllerSid -ne $taskCurrent) {
+        Remove-StartupEntry ([Microsoft.Win32.Registry]::Users) ($ControllerSid + '\' + $taskRun)
+    }
+}
+
 function Invoke-Uninstall {
-    $null = Invoke-Inspect
+    $taskInspection = Invoke-Inspect
     Assert-Idle
     $taskOriginal = Get-ServiceSnapshot (Get-OwnedService)
     if (-not (Test-Path -LiteralPath $script:InstallRoot)) { return [pscustomobject]@{ Success = $true; RollbackComplete = $true; Message = 'Tunnela is not installed. User profiles were preserved.' } }
@@ -506,6 +531,7 @@ function Invoke-Uninstall {
     }
     $taskMessage = 'The Tunnela service and application payload were removed. All user profiles were preserved.'
     try { Remove-InstallChild $taskTransaction } catch { $taskMessage += ' A protected payload backup remains because cleanup could not finish.' }
+    try { Remove-StartupEntries $taskInspection.ExistingControllerSid } catch { $taskMessage += ' The sign-in start entry could not be removed; Windows will start nothing for it.' }
     return [pscustomobject]@{ Success = $true; RollbackComplete = $true; Message = $taskMessage }
 }
 

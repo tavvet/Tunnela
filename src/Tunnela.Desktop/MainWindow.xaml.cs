@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(5) };
     private readonly CancellationTokenSource _lifetime = new();
     private readonly TrayController _tray;
+    private readonly StartupSetting _startup;
     private ProfileCollection _collection = new();
     private List<DiagnosticEntry> _logEntries = [];
     private bool _changingLanguage;
@@ -59,12 +60,26 @@ public partial class MainWindow : Window
             closeInterface: () => QueueTrayAction(CloseInterface));
         UpdateTray();
         LoadProfiles(initialCollection);
+        _startup = new StartupSetting(_model, Registry.CurrentUser, Environment.ProcessPath,
+            action => Dispatcher.BeginInvoke(action));
+        _startup.Refresh();
         _timer.Tick += async (_, _) => await RefreshAsync();
         Loaded += Window_Loaded;
         Closed += Window_Closed;
     }
 
-    private async void Window_Loaded(object sender, RoutedEventArgs e)
+    private async void Window_Loaded(object sender, RoutedEventArgs e) => await StartMonitoringAsync();
+
+    /// <summary>
+    /// Sign-in start: only the tray icon appears. The window exists but is not shown until it is
+    /// opened from the tray or by starting Tunnela again. Status polling starts immediately.
+    /// </summary>
+    internal async void StartInTray() => await StartMonitoringAsync();
+
+    /// <summary>Called from a thread-pool wait when another instance asks this one to show its window.</summary>
+    internal void RequestShow() => QueueTrayAction(ShowFromTray);
+
+    private async Task StartMonitoringAsync()
     {
         if (_initialized) return;
         _initialized = true;
@@ -155,6 +170,7 @@ public partial class MainWindow : Window
     private void ShowFromTray()
     {
         if (_closed) return;
+        _startup.Refresh(); // The entry may have been changed in Task Manager meanwhile.
         Show();
         if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
         Activate();

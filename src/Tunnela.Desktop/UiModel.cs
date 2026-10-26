@@ -138,6 +138,33 @@ internal sealed class UiModel : ObservableModel
         set => Set(ref _minimizeToTray, value);
     }
 
+    private bool _startWithWindows;
+    private bool _canChangeStartWithWindows;
+    private string _startupHintKey = "StartupHintNotInstalled";
+
+    /// <summary>Mirrors the HKCU Run entry; the window applies a user change to the registry at once.</summary>
+    public bool StartWithWindows
+    {
+        get => _startWithWindows;
+        set => Set(ref _startWithWindows, value);
+    }
+
+    public bool CanChangeStartWithWindows
+    {
+        get => _canChangeStartWithWindows;
+        private set => Set(ref _canChangeStartWithWindows, value);
+    }
+
+    public string StartupHint => Text.Get(_startupHintKey);
+
+    public void SetStartupState(bool enabled, bool canChange, string hintKey)
+    {
+        StartWithWindows = enabled;
+        CanChangeStartWithWindows = canChange;
+        _startupHintKey = hintKey;
+        Notify(nameof(StartupHint));
+    }
+
     public TunnelSnapshot Snapshot { get; private set; } = new() { State = TunnelState.Unknown };
 
     public string ConnectText =>
@@ -222,6 +249,7 @@ internal sealed class UiModel : ObservableModel
         }
 
         Notify(nameof(SelectedName));
+        Notify(nameof(StartupHint));
         Notify(nameof(ServiceText));
         Notify(nameof(ConnectText));
         Notify(nameof(ActiveProfileText));

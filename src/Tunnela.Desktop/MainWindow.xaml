@@ -127,6 +127,8 @@
                 <TextBlock Text="{loc:Loc ViewLanguageHint}" Style="{StaticResource Muted}" FontSize="12" Margin="0,6,0,14" />
                 <CheckBox Content="{loc:Loc ViewMinimizeToTray}" IsChecked="{Binding MinimizeToTray}" />
                 <TextBlock Text="{loc:Loc ViewMinimizeToTrayHint}" Style="{StaticResource Muted}" Margin="0,10,0,0" />
+                <CheckBox Content="{loc:Loc ViewStartWithWindows}" IsChecked="{Binding StartWithWindows}" IsEnabled="{Binding CanChangeStartWithWindows}" Margin="0,14,0,4" />
+                <TextBlock Text="{Binding StartupHint}" Style="{StaticResource Muted}" Margin="0,6,0,0" />
                 <Button Content="{loc:Loc ViewSavePreferences}" Style="{StaticResource Primary}" Click="SavePreferences_Click" HorizontalAlignment="Left" Margin="0,20,0,0" IsEnabled="{Binding CanInteract}" />
               </StackPanel>
             </Border>

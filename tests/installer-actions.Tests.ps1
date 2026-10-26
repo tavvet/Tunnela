@@ -1,5 +1,6 @@
 # Isolated filesystem/command-mock checks. Never invokes the installer entry point,
-# real SCM commands, registry writes, ACL changes, an application, or a VPN.
+# real SCM commands, ACL changes, an application, or a VPN. Registry writes go only to a
+# temporary HKCU\Software\Tunnela.Tests key, which is deleted afterwards.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $taskRepository = Split-Path -Parent $PSScriptRoot
@@ -97,6 +98,7 @@ function Invoke-CimMethod($InputObject, [string]$MethodName) {
     $script:FakeService = $null
     return [pscustomobject]@{ ReturnValue = 0 }
 }
+function Remove-StartupEntries([string]$ControllerSid) { $script:Operations.Add('RemoveStartup:' + $ControllerSid) }
 function Move-Item([string]$LiteralPath, [string]$Destination) {
     if ($script:FailMove -and (Split-Path -Leaf $LiteralPath) -eq $script:FailMove) { $script:FailMove = ''; throw 'Injected directory-swap failure.' }
     Microsoft.PowerShell.Management\Move-Item -LiteralPath $LiteralPath -Destination $Destination
@@ -238,8 +240,14 @@ try {
     Assert-OldRestored
 
     Reset-Fixture $true
+    $script:FailDelete = $true
+    $null = Invoke-Uninstall
+    Assert-True (-not $script:Operations.Contains('RemoveStartup:' + $script:TestSid)) 'failed uninstall keeps the sign-in start entry'
+
+    Reset-Fixture $true
     $taskResult = Invoke-Uninstall
     Assert-True $taskResult.Success 'successful mocked uninstall commits'
+    Assert-True ($script:Operations[$script:Operations.Count - 1] -eq ('RemoveStartup:' + $script:TestSid)) 'uninstall removes sign-in start entries for the recorded controller last'
     Assert-True ($null -eq $script:FakeService) 'owned service removed'
     Assert-True (-not (Test-Path -LiteralPath (Join-Path $script:InstallRoot 'desktop')) -and -not (Test-Path -LiteralPath (Join-Path $script:InstallRoot 'service'))) 'only payload directories removed'
     Assert-True (Test-Path -LiteralPath (Join-Path $script:InstallRoot 'installer-actions.ps1')) 'backend remains for NSIS'
@@ -247,7 +255,39 @@ try {
     Assert-True ((Get-Content -LiteralPath (Join-Path $taskTestRoot 'profiles.dat') -Raw) -eq 'preserved user profiles') 'user profile sentinel preserved'
     Assert-Throws { Remove-InstallChild $script:InstallRoot } 'root recursive removal refused'
     Assert-Throws { Remove-InstallChild (Join-Path $taskTestRoot 'profiles.dat') } 'outside-root cleanup refused'
-    Write-Output ('Passed ' + $script:Checks + ' isolated installer assertions. No real service, registry, ACL, application or VPN operation executed.')
+
+    # Sign-in start cleanup runs against a temporary key that stands in for a user's hive.
+    $taskRegistryTest = 'Software\Tunnela.Tests\' + [guid]::NewGuid().ToString('N')
+    $taskRegistryRoot = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($taskRegistryTest)
+    try {
+        $taskRunPath = 'Software\Microsoft\Windows\CurrentVersion\Run'
+        $taskExe = Join-Path $script:InstallRoot 'desktop\Tunnela.Desktop.exe'
+        Remove-StartupEntry $taskRegistryRoot $taskRunPath
+        Assert-True $true 'missing Run key or unloaded hive is ignored'
+        $taskRun = $taskRegistryRoot.CreateSubKey($taskRunPath)
+        try {
+            $taskRun.SetValue('OtherApp', '"C:\Other\app.exe"')
+            foreach ($taskCommand in @(('"' + $taskExe + '" --tray'), ('"' + $taskExe.ToUpperInvariant() + '" --tray --other'))) {
+                $taskRun.SetValue('Tunnela', $taskCommand)
+                Remove-StartupEntry $taskRegistryRoot $taskRunPath
+                Assert-True ($null -eq $taskRun.GetValue('Tunnela')) 'entry starting this installation removed whatever its arguments'
+            }
+            $taskRun.SetValue('Tunnela', '"G:\copy\Tunnela.Desktop.exe" --tray')
+            Remove-StartupEntry $taskRegistryRoot $taskRunPath
+            Assert-True ($taskRun.GetValue('Tunnela') -eq '"G:\copy\Tunnela.Desktop.exe" --tray') 'entry for another copy kept'
+            Assert-True ($taskRun.GetValue('OtherApp') -eq '"C:\Other\app.exe"') 'other startup entries untouched'
+        } finally { $taskRun.Dispose() }
+    } finally {
+        $taskRegistryRoot.Dispose()
+        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKeyTree($taskRegistryTest, $false)
+        $taskTestsKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Tunnela.Tests', $true)
+        if ($taskTestsKey) {
+            $taskEmpty = $taskTestsKey.SubKeyCount -eq 0 -and $taskTestsKey.ValueCount -eq 0
+            $taskTestsKey.Dispose()
+            if ($taskEmpty) { [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey('Software\Tunnela.Tests', $false) }
+        }
+    }
+    Write-Output ('Passed ' + $script:Checks + ' isolated installer assertions. No real service, ACL, application or VPN operation executed; registry writes were limited to a temporary HKCU\Software\Tunnela.Tests key.')
 } finally {
     $taskResolvedRoot = [IO.Path]::GetFullPath($taskTestRoot)
     $taskAllowedRoot = [IO.Path]::GetFullPath((Join-Path $taskRepository '.artifacts\installer-tests')).TrimEnd('\') + '\'
