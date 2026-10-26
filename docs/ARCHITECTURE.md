@@ -10,6 +10,7 @@ Tunnela is an independent Windows wrapper for the TrustTunnel engine. The GUI an
 | Tunnela.Service | Installation validation, IPC server, CLI process, limited diagnostics |
 | Tunnela.Core.Tests | Isolated tests without launching the application or changing the network |
 | Tunnela.Desktop.Tests | Model, localization, report formatting, and in-memory WPF control checks |
+| Tunnela.Service.Tests | Pipe accept loop on private local pipes and protected-folder checks in a temporary directory |
 
 ## Reading the C# code
 

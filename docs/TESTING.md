@@ -65,6 +65,19 @@ These focused checks are pending after the October 7 source refactor. Use a fres
 2. Reopen, edit a profile without saving, then switch English/Russian. Expect the draft and routing mode to remain, with labels and tray actions translated. Choose **Close interface…** and cancel: the unsaved draft must remain visible.
 3. In Diagnostics, refresh available service events and export a report. Expect localized headings and timestamps, without profile names, hostnames, addresses, usernames, passwords, or certificate contents in diagnostic messages. Cancel or discard the draft after the check; no real connection is needed.
 
+### After the review fixes
+
+These checks are pending for a build containing the October 26 review fixes. Steps 1–2 and 4 do not require a VPN connection; step 3 is part of a later, user-controlled connection test.
+
+1. **Install or update.** Build the installer and update the existing installation as described in [Installer acceptance](#installer-acceptance). Expect a normal update: the service starts idle, profiles remain, and no message about `%ProgramData%\Tunnela` appears. A message about that folder means it was not created by Tunnela; do not change it yourself, report it.
+2. **Exit without a connection.** With the service running and the VPN disconnected, choose **Disconnect and exit** from the tray. Expect the application to close without a warning that disconnection was not confirmed.
+3. **Exit after a failed connection.** During a separately authorized test, after a connection attempt has ended with **Attention required** and the process is shown as **Not running**, choose **Disconnect and exit**. Expect the application to close without the unconfirmed-disconnect warning. If the process is still running, a warning is expected.
+4. **First installation on a clean machine.** This is the only path where the service creates `%ProgramData%\Tunnela` itself; an update on your computer reuses the existing folder. Use a separate clean Windows virtual machine or Windows Sandbox where Tunnela has never been installed. Do not delete the folder on your own computer to simulate this. Install the package, then open Tunnela from Start. Expect the service to be running and available. In an elevated PowerShell inside that machine, the following read-only command should show owner `BUILTIN\Administrators` and access only for `NT AUTHORITY\SYSTEM` and `BUILTIN\Administrators`:
+
+```powershell
+Get-Acl "$env:ProgramData\Tunnela\Service" | Format-List Owner, AccessToString
+```
+
 ## Service without a connection
 
 1. Install the service following [INSTALL.md](INSTALL.md). The `Tunnela` service (`Tunnela VPN Service`) should be running and waiting for a command; `%ProgramFiles%\Tunnela\service\engine\trusttunnel_client.exe` must not start before connection. A process belonging to an existing client is not Tunnela's process.

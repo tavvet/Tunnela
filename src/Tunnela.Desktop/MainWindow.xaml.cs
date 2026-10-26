@@ -521,8 +521,7 @@ public partial class MainWindow : Window
                 var response = await _client.SendAsync("disconnect", cancellationToken: _lifetime.Token);
                 if (_closed) return;
                 _model.Apply(response.Snapshot);
-                disconnected = response.Success && response.Snapshot.State == TunnelState.Disconnected &&
-                    response.Snapshot.ProcessId is null;
+                disconnected = UiModel.ConfirmsNoTunnel(response);
                 if (!disconnected) _model.Notice = ErrorText(response, "DisconnectNotConfirmed");
             });
             if (_closed) return;

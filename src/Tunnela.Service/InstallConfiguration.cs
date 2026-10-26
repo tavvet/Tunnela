@@ -119,14 +119,24 @@ internal static class ProtectedFiles
     // because an untrusted owner could change the DACL even without an existing write grant.
     internal static void RequireProtectedAcl(FileSystemInfo info)
     {
+        var security = ReadSecurity(info);
+        RequireNoUntrustedWriteRules(security);
+        RequireTrustedOwner(security);
+    }
+
+    private static FileSystemSecurity ReadSecurity(FileSystemInfo info)
+    {
         if (!info.Exists || (info.Attributes & FileAttributes.ReparsePoint) != 0)
         {
             throw new IOException(Messages.GetEnglish("Service.ProtectedFileMissing"));
         }
-        FileSystemSecurity security = info is DirectoryInfo directory
+        return info is DirectoryInfo directory
             ? directory.GetAccessControl(AccessControlSections.Access | AccessControlSections.Owner)
             : ((FileInfo)info).GetAccessControl(AccessControlSections.Access | AccessControlSections.Owner);
+    }
 
+    internal static void RequireNoUntrustedWriteRules(FileSystemSecurity security)
+    {
         foreach (FileSystemAccessRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
         {
             if (rule.AccessControlType != AccessControlType.Allow || (rule.PropagationFlags & PropagationFlags.InheritOnly) != 0)
@@ -138,6 +148,10 @@ internal static class ProtectedFiles
                 throw new UnauthorizedAccessException(Messages.GetEnglish("Service.ProtectedFileWritable"));
             }
         }
+    }
+
+    private static void RequireTrustedOwner(FileSystemSecurity security)
+    {
         var owner = security.GetOwner(typeof(SecurityIdentifier));
         if (owner is null || !IsTrusted(owner.Value))
         {
@@ -147,22 +161,49 @@ internal static class ProtectedFiles
 
     internal static void EnsureRuntimeDirectory()
     {
-        var root = Path.GetDirectoryName(InstallConfiguration.RuntimeDirectory)!;
-        foreach (var path in new[] { root, InstallConfiguration.RuntimeDirectory })
+        EnsureProtectedDirectory(Path.GetDirectoryName(InstallConfiguration.RuntimeDirectory)!);
+        EnsureProtectedDirectory(InstallConfiguration.RuntimeDirectory);
+    }
+
+    /// <summary>
+    /// Creates a directory with a SYSTEM/Administrators-only DACL in one step, or verifies an existing one.
+    /// An existing directory is never adopted by rewriting its owner or DACL: standard users can create
+    /// folders under ProgramData, and a handle opened before such a rewrite keeps its access.
+    /// </summary>
+    internal static void EnsureProtectedDirectory(string path) =>
+        EnsureProtectedDirectory(path, AdministratorsSid, RequireProtectedAcl);
+
+    /// <summary>
+    /// Test seam for the creation path. Production passes the Administrators owner and the full
+    /// <see cref="RequireProtectedAcl"/> check; tests pass an owner that a non-elevated user may assign.
+    /// </summary>
+    internal static void EnsureProtectedDirectory(string path, SecurityIdentifier owner, Action<DirectoryInfo> verify)
+    {
+        var directory = new DirectoryInfo(path);
+        if (!directory.Exists)
         {
-            Directory.CreateDirectory(path);
-            CheckNoReparsePoints(path);
-            var security = new DirectorySecurity();
-            security.SetAccessRuleProtection(true, false);
-            security.SetOwner(AdministratorsSid);
-            foreach (var sid in new[] { SystemSid, AdministratorsSid })
-            {
-                security.AddAccessRule(new FileSystemAccessRule(sid, FileSystemRights.FullControl,
-                    InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
-                    PropagationFlags.None, AccessControlType.Allow));
-            }
-            new DirectoryInfo(path).SetAccessControl(security);
+            // The descriptor is applied at creation. If another process created the directory first,
+            // this succeeds without changing it, and the checks below decide whether it may be used.
+            directory.Create(CreateProtectedDirectorySecurity(owner));
+            directory.Refresh();
         }
+        CheckNoReparsePoints(path);
+        verify(directory);
+    }
+
+    /// <summary>Protected DACL with SYSTEM and Administrators full control, inherited by children.</summary>
+    internal static DirectorySecurity CreateProtectedDirectorySecurity(SecurityIdentifier owner)
+    {
+        var security = new DirectorySecurity();
+        security.SetAccessRuleProtection(true, false);
+        security.SetOwner(owner);
+        foreach (var sid in new[] { SystemSid, AdministratorsSid })
+        {
+            security.AddAccessRule(new FileSystemAccessRule(sid, FileSystemRights.FullControl,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None, AccessControlType.Allow));
+        }
+        return security;
     }
 
     internal static void WriteSecret(string path, string content)

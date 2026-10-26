@@ -378,6 +378,9 @@ internal sealed class EngineSupervisor
         }
     }
 
+    /// <summary>Records a retried control pipe failure; it becomes visible once a client connects again.</summary>
+    public void RecordControlChannelFault() => AddLog("warn", "Service.ControlChannelFault");
+
     private void AddLog(string level, string messageCode)
     {
         lock (_stateLock)

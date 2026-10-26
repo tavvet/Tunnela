@@ -16,6 +16,8 @@ New-Item -ItemType Directory -Path $taskTestRoot -Force | Out-Null
 $script:InstallRoot = Join-Path $taskTestRoot 'Tunnela'
 $script:ServiceExe = Join-Path $script:InstallRoot 'service\Tunnela.Service.exe'
 $script:EngineExe = Join-Path $script:InstallRoot 'service\engine\trusttunnel_client.exe'
+$script:ServiceDataRoot = Join-Path $taskTestRoot 'ProgramData\Tunnela'
+$script:UntrustedAclPath = ''
 $script:ServiceName = 'Tunnela'
 $script:EngineVersion = '1.1.7'
 $script:EngineHash = '86A5992D4F841DCF605DA374D2D74BAB035FB2C0D9B32719BDD9F80CFDD56C68'
@@ -43,7 +45,10 @@ function Write-TestFile([string]$Path, [string]$Content) {
 
 # OS and security operations are deliberately mocked. Production transaction/file
 # code and fixed-path deletion guards are the original extracted functions above.
-function Assert-ProtectedAcl([string]$Path) { if (-not (Test-Path -LiteralPath $Path)) { throw 'Missing protected test fixture.' } }
+function Assert-ProtectedAcl([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { throw 'Missing protected test fixture.' }
+    if ($script:UntrustedAclPath -and (Test-SamePath $Path $script:UntrustedAclPath)) { throw 'Injected untrusted ACL.' }
+}
 function Set-ProtectedTree([string]$Path) { }
 function Assert-Payload([string]$Path) { Assert-True (Test-SamePath $Path $script:Payload) 'payload path preserved' }
 function Resolve-ControllerUser([string]$Account, [string]$ExistingSid) { if ($ExistingSid) { return $ExistingSid }; return $script:TestSid }
@@ -201,6 +206,22 @@ try {
     Assert-True (-not $taskResult.Success -and $taskResult.RollbackComplete) 'first install startup failure rolls back'
     Assert-True ($null -eq $script:FakeService) 'new service removed during rollback'
     Assert-True (-not (Test-Path -LiteralPath (Join-Path $script:InstallRoot 'service'))) 'failed new service payload removed'
+
+    Reset-Fixture $true
+    Write-TestFile (Join-Path $script:ServiceDataRoot 'Service\marker.txt') 'service data'
+    $script:UntrustedAclPath = $script:ServiceDataRoot
+    $taskMessage = ''
+    try { Invoke-Install $script:Payload 'TEST\User' | Out-Null } catch { $taskMessage = Get-SafeMessage $_.Exception }
+    Assert-True ($taskMessage -like '*ProgramData*Nothing was changed*') 'untrusted ProgramData folder blocks install with an explanation'
+    Assert-True ($script:Operations.Count -eq 0) 'ProgramData refusal before any SCM mutation'
+    Assert-True (@(Get-ChildItem -LiteralPath $script:InstallRoot -Force | Where-Object { $_.Name -like '.transaction.*' }).Count -eq 0) 'ProgramData refusal before any file transaction'
+    Assert-True ((Get-Content -LiteralPath (Join-Path $script:ServiceDataRoot 'Service\marker.txt') -Raw) -eq 'service data') 'untrusted ProgramData folder left unchanged'
+    $script:UntrustedAclPath = ''
+    Assert-ServiceDataTrusted
+    Assert-True $true 'protected ProgramData folder accepted'
+    Microsoft.PowerShell.Management\Remove-Item -LiteralPath $script:ServiceDataRoot -Recurse -Force
+    Assert-ServiceDataTrusted
+    Assert-True $true 'missing ProgramData folder accepted'
 
     Reset-Fixture $true
     $taskResult = Invoke-Install $script:Payload 'TEST\OtherUser'

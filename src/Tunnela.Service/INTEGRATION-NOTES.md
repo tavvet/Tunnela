@@ -89,7 +89,14 @@ NETWORK is denied. The controller cannot create another server instance. A first
 and a continuously retained server handle protect the pipe name. At most eight requests run
 concurrently; connect/disconnect are serialized. Frames are one UTF-8 JSON message plus newline,
 limited to 256 KiB, with a three-second read deadline. Only `status`, `logs`, `connect`, and
-`disconnect` exist. Version mismatch and unknown commands are rejected.
+`disconnect` exist. Version mismatch and unknown commands are rejected. A client that disconnects
+before its connection is accepted invalidates only that pipe instance; the service replaces it and
+keeps serving instead of stopping (which would request a VPN disconnect). Other accept failures and
+pipe-instance creation failures are retried with delays from 200 ms to 5 s and recorded as a
+sanitized diagnostic. After 20 consecutive faults without an accepted client (about 75 seconds)
+the service stops, which requests the normal graceful VPN disconnect, rather than running without
+a working control channel. While no listening instance exists, the name is held only by connected
+instances; the GUI's server-PID check still rejects a pipe served by another process.
 
 All executable paths, runtime paths and helper arguments are chosen by the service. The service
 refuses interactive/uninstalled startup. It requires a protected Program Files installation,
@@ -98,7 +105,10 @@ trusted owners, no writable non-administrator ACLs and no reparse points in prot
 
 The active runtime TOML necessarily contains plaintext engine credentials. It lives under
 `%ProgramData%/Tunnela/Service` with an explicit SYSTEM/Administrators-only ACL and is
-removed after process exit. Administrators and SYSTEM remain able to read it. Do not put that
+removed after process exit. Administrators and SYSTEM remain able to read it. The service creates
+`%ProgramData%/Tunnela` and its `Service` folder with that ACL at creation time. It refuses, and
+never re-permissions, an existing folder that is redirected, owned by a non-administrator, or
+writable by non-administrators; the installer reports this case before changing anything. Do not put that
 file in diagnostics or support bundles. Crash remnants are checked on service startup.
 
 Raw engine output is bounded in memory one line at a time and discarded after state recognition.

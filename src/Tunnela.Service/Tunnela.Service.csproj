@@ -6,6 +6,7 @@
     <RootNamespace>Tunnela.Service</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Tunnela.Service.Tests" />
     <None Include="../../LICENSE" Link="licenses/TUNNELA_LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0" />
     <ProjectReference Include="../Tunnela.Contracts/Tunnela.Contracts.csproj" />

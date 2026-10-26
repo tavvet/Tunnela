@@ -8,5 +8,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Tunnela.Core.Tests/Tunnela.Core.Tests.csproj" />
     <Project Path="tests/Tunnela.Desktop.Tests/Tunnela.Desktop.Tests.csproj" />
+    <Project Path="tests/Tunnela.Service.Tests/Tunnela.Service.Tests.csproj" />
   </Folder>
 </Solution>

@@ -76,6 +76,7 @@
   <data name="Service.Reconnecting" xml:space="preserve"><value>Соединение потеряно. TrustTunnel ожидает сеть или пытается восстановить связь.</value></data>
   <data name="Service.EngineDisconnected" xml:space="preserve"><value>TrustTunnel сообщил об отключении. Ожидание завершения процесса.</value></data>
   <data name="Service.Unknown" xml:space="preserve"><value>Состояние VPN неизвестно.</value></data>
+  <data name="Service.ControlChannelFault" xml:space="preserve"><value>Канал управления службой дал сбой и восстанавливается. Состояние VPN не изменилось.</value></data>
   <data name="Service.RuntimeCleanupFailed" xml:space="preserve"><value>Не удалось удалить временную конфигурацию. Она остаётся доступной только SYSTEM и администраторам.</value></data>
   <data name="Service.ProcessStopped" xml:space="preserve"><value>Процесс TrustTunnel завершён. VPN отключён.</value></data>
   <data name="Service.ProcessExited" xml:space="preserve"><value>Процесс TrustTunnel завершился. VPN не подключён.</value></data>

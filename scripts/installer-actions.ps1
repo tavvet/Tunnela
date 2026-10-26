@@ -19,6 +19,7 @@ $script:ProgramFilesRoot = [IO.Path]::GetFullPath([Environment]::GetFolderPath([
 $script:InstallRoot = Join-Path $script:ProgramFilesRoot 'Tunnela'
 $script:ServiceExe = Join-Path $script:InstallRoot 'service\Tunnela.Service.exe'
 $script:EngineExe = Join-Path $script:InstallRoot 'service\engine\trusttunnel_client.exe'
+$script:ServiceDataRoot = Join-Path ([IO.Path]::GetFullPath([Environment]::GetFolderPath([Environment+SpecialFolder]::CommonApplicationData)).TrimEnd('\')) 'Tunnela'
 $script:BackendPath = $PSCommandPath
 $script:MutationStarted = $false
 
@@ -327,6 +328,14 @@ function Remove-InstallChild([string]$Path) {
     }
 }
 
+function Assert-ServiceDataTrusted {
+    # The service refuses a ProgramData folder that it did not create protected. Report that before
+    # any change instead of a later service start failure. Never remove or re-permission it here.
+    if (-not (Test-Path -LiteralPath $script:ServiceDataRoot)) { return }
+    try { Assert-ProtectedTree $script:ServiceDataRoot }
+    catch { Fail-Installer 'The folder %ProgramData%\Tunnela is redirected, has an untrusted owner, or is writable by non-administrators. Nothing was changed. An administrator must review and remove that folder before installing Tunnela.' }
+}
+
 function Get-ServiceSnapshot($Service) {
     if (-not $Service) { return $null }
     $taskRegistry = Get-ItemProperty -LiteralPath ('HKLM:\SYSTEM\CurrentControlSet\Services\' + $script:ServiceName)
@@ -421,6 +430,7 @@ function Invoke-Inspect {
 
 function Invoke-Install([string]$Payload, [string]$Account) {
     $taskInspection = Invoke-Inspect
+    Assert-ServiceDataTrusted
     Assert-Idle
     Assert-Payload $Payload
     $taskSid = Resolve-ControllerUser $Account $taskInspection.ExistingControllerSid
@@ -502,7 +512,7 @@ function Invoke-Uninstall {
 try {
     Assert-ExecutionLocation
     $taskResult = switch ($Action) {
-        'Inspect' { Invoke-Inspect }
+        'Inspect' { Assert-ServiceDataTrusted; Invoke-Inspect }
         'Install' { Invoke-Install $PayloadDirectory $ControllerAccount }
         'Uninstall' { Invoke-Uninstall }
     }

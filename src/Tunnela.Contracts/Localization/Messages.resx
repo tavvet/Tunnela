@@ -76,6 +76,7 @@
   <data name="Service.Reconnecting" xml:space="preserve"><value>The connection was lost. TrustTunnel is waiting for the network or trying to reconnect.</value></data>
   <data name="Service.EngineDisconnected" xml:space="preserve"><value>TrustTunnel reported a disconnection. Waiting for the process to exit.</value></data>
   <data name="Service.Unknown" xml:space="preserve"><value>The VPN state is unknown.</value></data>
+  <data name="Service.ControlChannelFault" xml:space="preserve"><value>The service control channel failed and is being restored. The VPN state is unchanged.</value></data>
   <data name="Service.RuntimeCleanupFailed" xml:space="preserve"><value>The temporary configuration could not be deleted. It remains accessible only to SYSTEM and administrators.</value></data>
   <data name="Service.ProcessStopped" xml:space="preserve"><value>The TrustTunnel process has exited. VPN is disconnected.</value></data>
   <data name="Service.ProcessExited" xml:space="preserve"><value>The TrustTunnel process exited. VPN is not connected.</value></data>

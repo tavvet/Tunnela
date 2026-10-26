@@ -150,6 +150,15 @@ internal sealed class UiModel : ObservableModel
         ? Text.Get("ActiveProfile", Snapshot.ProfileName ?? Text.Get("Unnamed"))
         : "";
 
+    /// <summary>
+    /// True when the service accepted a disconnect and reports no engine process. Error counts as stopped:
+    /// the service records it only after the engine exited or failed to start, and keeps it until the next
+    /// connect. Unknown never counts, because it can describe an engine the service cannot control.
+    /// </summary>
+    public static bool ConfirmsNoTunnel(ServiceResponse response) =>
+        response.Success && response.Snapshot.ProcessId is null &&
+        response.Snapshot.State is TunnelState.Disconnected or TunnelState.Error;
+
     public void Apply(TunnelSnapshot snapshot)
     {
         Snapshot = snapshot;
