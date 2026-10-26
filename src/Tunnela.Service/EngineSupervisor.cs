@@ -33,7 +33,7 @@ internal sealed class EngineSupervisor
             var recovered = ConsoleEngineProcess.TryRecover();
             if (recovered is not null)
             {
-                AdoptRecovered(recovered);
+                _ = AdoptRecovered(recovered); // Shutdown cannot have begun during construction.
             }
             else if (HasUnownedEngine())
             {
@@ -65,11 +65,20 @@ internal sealed class EngineSupervisor
         AddLog("info", "Service.Ready");
     }
 
-    /// <summary>Takes over an engine verified by its ownership record. Its earlier output stream cannot be regained.</summary>
-    private void AdoptRecovered(ConsoleEngineProcess engine)
+    /// <summary>
+    /// Takes over an engine verified by its ownership record. Its earlier output stream cannot be regained.
+    /// Refused once service shutdown has begun, so shutdown never stops an engine it was not already controlling.
+    /// </summary>
+    private bool AdoptRecovered(ConsoleEngineProcess engine)
     {
         lock (_stateLock)
         {
+            // Checked under the same lock that ShutdownAsync uses to set the flag, so there is no gap.
+            if (_shuttingDown)
+            {
+                engine.Dispose();
+                return false;
+            }
             _engine = engine;
             _stopRequested = false;
             _stopSignalAttempted = engine.Record.StopSignalAttempted;
@@ -84,6 +93,7 @@ internal sealed class EngineSupervisor
             };
         }
         _exitTask = ObserveExitAsync(engine, Task.CompletedTask);
+        return true;
     }
 
     /// <summary>
@@ -106,7 +116,7 @@ internal sealed class EngineSupervisor
             try { recovered = ConsoleEngineProcess.TryRecover(); } catch { }
             if (recovered is not null)
             {
-                AdoptRecovered(recovered);
+                if (!AdoptRecovered(recovered)) return; // Shutdown began meanwhile: keep the block.
             }
             else
             {
