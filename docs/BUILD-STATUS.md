@@ -2,6 +2,13 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
+## Engine supervisor robustness — unreleased, October 27, 2026
+
+- **Engine output.** A failure while handling one output line no longer stops reading stdout, so the engine cannot block on a full pipe. Exit handling now tolerates a failed output reader or an unreadable exit code, so the runtime files (including the plaintext `active.toml`) are still removed and the next connect is not blocked.
+- **Ownership block.** A block set at service startup (an unverified engine, or an ownership check that failed) used to last until the service restarted. It is now re-checked on the next connect or disconnect request; see [integration notes](../src/Tunnela.Service/INTEGRATION-NOTES.md#graceful-stop-and-remaining-integration-checks). A disconnect request with no engine left now succeeds instead of reporting unsafe control.
+- **Lock scope.** The engine hash after a failure is computed before taking the state lock, so status requests are not held up by file hashing.
+- Not built or tested by the development agent (no Windows SDK on that machine). No application, service, or VPN was launched. The user runs the build and tests; the re-check path needs a manual check with a leftover engine process.
+
 ## Start with Windows — 0.1.0-preview.5, October 26, 2026
 
 - **Service.** Unchanged: after an EXE installation it already starts with Windows (Automatic, not delayed) and waits idle. The development `install-dev.ps1` still registers Manual startup.

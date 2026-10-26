@@ -30,20 +30,10 @@ internal sealed class EngineSupervisor
         _snapshot = new TunnelSnapshot { EngineAvailable = installation.VerifyEngine(), MessageCode = "Service.Disconnected" };
         try
         {
-            _engine = ConsoleEngineProcess.TryRecover();
-            if (_engine is not null)
+            var recovered = ConsoleEngineProcess.TryRecover();
+            if (recovered is not null)
             {
-                _stopSignalAttempted = _engine.Record.StopSignalAttempted;
-                _snapshot = _snapshot with
-                {
-                    State = TunnelState.Unknown,
-                    Message = Messages.GetEnglish("Service.RecoveredProcessUnknown"),
-                    MessageCode = "Service.RecoveredProcessUnknown",
-                    ProcessId = _engine.Record.ProcessId,
-                    ProfileId = _engine.Record.ProfileId,
-                    ErrorCode = "RecoveredProcessUnknown",
-                };
-                _exitTask = ObserveExitAsync(_engine, Task.CompletedTask);
+                AdoptRecovered(recovered);
             }
             else if (HasUnownedEngine())
             {
@@ -73,6 +63,76 @@ internal sealed class EngineSupervisor
             };
         }
         AddLog("info", "Service.Ready");
+    }
+
+    /// <summary>Takes over an engine verified by its ownership record. Its earlier output stream cannot be regained.</summary>
+    private void AdoptRecovered(ConsoleEngineProcess engine)
+    {
+        lock (_stateLock)
+        {
+            _engine = engine;
+            _stopRequested = false;
+            _stopSignalAttempted = engine.Record.StopSignalAttempted;
+            _snapshot = _snapshot with
+            {
+                State = TunnelState.Unknown,
+                Message = Messages.GetEnglish("Service.RecoveredProcessUnknown"),
+                MessageCode = "Service.RecoveredProcessUnknown",
+                ProcessId = engine.Record.ProcessId,
+                ProfileId = engine.Record.ProfileId,
+                ErrorCode = "RecoveredProcessUnknown",
+            };
+        }
+        _exitTask = ObserveExitAsync(engine, Task.CompletedTask);
+    }
+
+    /// <summary>
+    /// Re-checks an ownership block set at startup, so that it does not last until the service restarts.
+    /// Call only while holding <see cref="_commands"/>. An engine at the Tunnela path that cannot be matched
+    /// to a valid ownership record keeps the block. Without such a process, nothing can be controlled
+    /// unsafely, so the stale runtime files are removed and the block is lifted. No process is ever
+    /// signalled or terminated here.
+    /// </summary>
+    private void RecheckOwnership()
+    {
+        lock (_stateLock)
+        {
+            if (!_ownershipBlocked || _shuttingDown || _engine is not null) return;
+        }
+        try
+        {
+            ConsoleEngineProcess? recovered = null;
+            // An unreadable record is not fatal: the process list below decides whether control is safe.
+            try { recovered = ConsoleEngineProcess.TryRecover(); } catch { }
+            if (recovered is not null)
+            {
+                AdoptRecovered(recovered);
+            }
+            else
+            {
+                if (HasUnownedEngine()) return;
+                ProtectedFiles.DeleteRuntimeFiles();
+                lock (_stateLock)
+                {
+                    _snapshot = _snapshot with
+                    {
+                        State = TunnelState.Disconnected,
+                        Message = Messages.GetEnglish("Service.Disconnected"),
+                        MessageCode = "Service.Disconnected",
+                        ProcessId = null,
+                        ProfileId = null,
+                        StartedAt = null,
+                        ErrorCode = null,
+                    };
+                }
+                AddLog("info", "Service.Disconnected");
+            }
+            lock (_stateLock) _ownershipBlocked = false;
+        }
+        catch
+        {
+            // Ownership still cannot be checked: keep the block and the current state.
+        }
     }
 
     public TunnelSnapshot Snapshot
@@ -106,6 +166,7 @@ internal sealed class EngineSupervisor
         await _commands.WaitAsync(cancellationToken);
         try
         {
+            RecheckOwnership();
             lock (_stateLock)
             {
                 if (_shuttingDown) return new("Service.ShuttingDown");
@@ -166,6 +227,8 @@ internal sealed class EngineSupervisor
         await _commands.WaitAsync(cancellationToken);
         try
         {
+            // Skipped during service shutdown, so stopping the service never takes over an engine it was not controlling.
+            RecheckOwnership();
             ConsoleEngineProcess? engine;
             Task exitTask;
             lock (_stateLock)
@@ -241,7 +304,7 @@ internal sealed class EngineSupervisor
                     var ch = buffer[index];
                     if (ch == '\n')
                     {
-                        if (!tooLong) ProcessOutputLine(engine, line.ToString());
+                        if (!tooLong) TryProcessOutputLine(engine, line.ToString());
                         line.Clear();
                         tooLong = false;
                     }
@@ -249,9 +312,13 @@ internal sealed class EngineSupervisor
                     else tooLong = true;
                 }
             }
-            if (line.Length != 0 && !tooLong) ProcessOutputLine(engine, line.ToString());
+            if (line.Length != 0 && !tooLong) TryProcessOutputLine(engine, line.ToString());
         }
-        catch (Exception exception) when (exception is IOException or ObjectDisposedException) { }
+        catch
+        {
+            // The pipe failed or was closed. This task must not fault: ObserveExitAsync awaits it
+            // before removing the runtime files. The finally block reports Unknown if the engine still runs.
+        }
         finally
         {
             lock (_stateLock)
@@ -268,6 +335,16 @@ internal sealed class EngineSupervisor
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// A line that cannot be processed is skipped. Reading must continue: if the service stopped
+    /// draining stdout, the engine could block once the pipe buffer is full.
+    /// </summary>
+    private void TryProcessOutputLine(ConsoleEngineProcess engine, string line)
+    {
+        try { ProcessOutputLine(engine, line); }
+        catch { /* Raw output is never logged, including on failure. */ }
     }
 
     private void ProcessOutputLine(ConsoleEngineProcess engine, string line)
@@ -295,9 +372,14 @@ internal sealed class EngineSupervisor
     private async Task ObserveExitAsync(ConsoleEngineProcess engine, Task outputTask)
     {
         await engine.Process.WaitForExitAsync();
+        // Nothing below may throw before cleanup: a fault here would keep the plaintext runtime
+        // configuration on disk and leave this engine registered, blocking every later connect.
         try { await outputTask.WaitAsync(TimeSpan.FromSeconds(2)); }
         catch (TimeoutException) { engine.Output?.Dispose(); }
-        var exitCode = engine.Process.ExitCode;
+        catch { /* Output reading already ended; only its state report was lost. */ }
+        string exitCode;
+        try { exitCode = engine.Process.ExitCode.ToString(System.Globalization.CultureInfo.InvariantCulture); }
+        catch { exitCode = "unknown"; }
         // Complete cleanup BEFORE publishing that a new engine may start, so an older exit cannot
         // delete the next connection's configuration or ownership record.
         try { ProtectedFiles.DeleteRuntimeFiles(); }
@@ -360,10 +442,12 @@ internal sealed class EngineSupervisor
 
     private void SetFailure(string code, string messageCode)
     {
+        // Hashing the engine reads several megabytes; keep it outside the lock that status requests use.
+        var engineAvailable = _installation.VerifyEngine();
         lock (_stateLock)
         {
             _snapshot = _snapshot with { State = TunnelState.Error, Message = Messages.GetEnglish(messageCode), MessageCode = messageCode, ErrorCode = code,
-                EngineAvailable = _installation.VerifyEngine() };
+                EngineAvailable = engineAvailable };
             AddLog("error", messageCode);
         }
     }

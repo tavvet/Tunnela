@@ -76,6 +76,9 @@ before any engine code has executed. On service failure an engine may outlive it
 A later service startup recognises the protected ownership record, reports Unknown and allows
 graceful disconnect; it cannot regain that process's previous output stream. An engine without
 a verifiable ownership record is never signalled automatically or replaced by a second engine.
+Such a block is re-checked on the next connect or disconnect request (not during service shutdown):
+a process that now matches a valid record is taken over as above; if no engine runs at the Tunnela
+path any more, the stale runtime files are removed and the block is lifted without a service restart.
 
 Normal application window closure does not stop the service or VPN. Normal service shutdown
 requests the same bounded graceful stop. Abrupt OS shutdown, service failure, stop timeouts,
