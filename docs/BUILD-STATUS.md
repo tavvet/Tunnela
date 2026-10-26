@@ -2,7 +2,7 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
-## Start with Windows — feature branch, October 26, 2026
+## Start with Windows — 0.1.0-preview.5, October 26, 2026
 
 - **Service.** Unchanged: after an EXE installation it already starts with Windows (Automatic, not delayed) and waits idle. The development `install-dev.ps1` still registers Manual startup.
 - **GUI at sign-in.** New **Settings** option *Start Tunnela in the notification area when I sign in to Windows*. It writes or removes one per-user value, `Tunnela`, under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, with the fixed command `"%ProgramFiles%\Tunnela\desktop\Tunnela.Desktop.exe" --tray`. It applies immediately, is available only in the installed copy, and shows when Windows Startup settings have turned the entry off. It never connects the VPN.
@@ -12,7 +12,7 @@ Baseline verification date: October 6, 2026. Documentation and language work: Oc
 - **Review of this branch.** Fixed: foreground activation, second-instance decisions extracted into `SingleInstance` and covered by tests, the checkbox re-read deferred until the binding update ends (`StartupSetting`), controller-account cleanup, and the single command rule shared by the GUI and the uninstaller.
 - Release build: 0 warnings, 0 errors. 152 isolated tests passed, 0 skipped: 79 Core, 62 Desktop (32 new, using temporary registry keys under `HKCU\Software\Tunnela.Tests` that are deleted afterwards), 11 Service. 83 isolated installer assertions passed; their registry checks also use only such a temporary key. NSIS 3.13 compiled the installer with `/WX` and no warnings.
 - Foreground activation, the deferred checkbox refresh in a real WPF window, and cleanup in another loaded user hive are not verified by automated tests.
-- The branch build produces `.artifacts\installer\Tunnela-0.1.0-preview.4-Setup-x64.exe`, the same name as the tagged `v0.1.0-preview.4` release, although it contains this unreleased feature. Bump the version before publishing it. No application, installer, sign-in start, Windows service, or VPN was launched. See [the manual checks](TESTING.md#starting-with-windows).
+- The build script now targets `0.1.0-preview.5` (Windows file version `0.1.0.5`) and produces `.artifacts\installer\Tunnela-0.1.0-preview.5-Setup-x64.exe`. No application, installer, sign-in start, Windows service, or VPN was launched. See [the manual checks](TESTING.md#starting-with-windows).
 
 ## Review fixes — 0.1.0-preview.4, October 26, 2026
 
