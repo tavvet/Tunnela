@@ -63,7 +63,7 @@ The installer build runs isolated tests, prepares the pinned TrustTunnel CLI **1
 Building this revision produces:
 
 ```text
-.artifacts\installer\Tunnela-0.1.0-preview.3-Setup-x64.exe
+.artifacts\installer\Tunnela-0.1.0-preview.4-Setup-x64.exe
 ```
 
 To build, test, and publish the desktop and service separately:

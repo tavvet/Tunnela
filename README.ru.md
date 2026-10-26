@@ -63,7 +63,7 @@ cd Tunnela
 При сборке этой версии создаётся файл:
 
 ```text
-.artifacts\installer\Tunnela-0.1.0-preview.3-Setup-x64.exe
+.artifacts\installer\Tunnela-0.1.0-preview.4-Setup-x64.exe
 ```
 
 Чтобы отдельно собрать, проверить и опубликовать GUI и службу:

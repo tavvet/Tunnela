@@ -2,7 +2,7 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
-## Review fixes — 0.1.0-preview.3 sources, October 26, 2026
+## Review fixes — 0.1.0-preview.4, October 26, 2026
 
 - **Pipe accept loop.** A client that opened a pipe instance and closed it before the service accepted it made `WaitForConnectionAsync` throw `IOException` (ERROR_NO_DATA). The exception escaped `ControlPipeWorker`, which stops the .NET host; stopping the service requests a VPN disconnect. The loop now replaces only that pipe instance and keeps serving. A new isolated test reproduces the race on a private, randomly named local pipe, and a characterization test confirms the Windows behaviour.
 - **Exit confirmation.** **Disconnect and exit** treated the service's `Error` state as an unconfirmed disconnect, so it warned even when no engine process existed (for example, after an unexpected engine exit or a failed start). An accepted disconnect with no process and state `Disconnected` or `Error` now closes without that warning; `Unknown` or any remaining process still asks for confirmation.
@@ -11,7 +11,7 @@ Baseline verification date: October 6, 2026. Documentation and language work: Oc
 - **Follow-up review of these fixes.** The first loop fix retried every accept `IOException` forever without a trace, and a failure to create the replacement pipe instance still stopped the service. Now only the Win32 results for a departed client (ERROR_NO_DATA, ERROR_BROKEN_PIPE, ERROR_PIPE_NOT_CONNECTED) are retried at once. Other accept failures and pipe-creation failures are retried with delays doubling from 200 ms to 5 s, recorded as a sanitized `Service.ControlChannelFault` diagnostic, and reset by the next accepted client. After 20 consecutive faults, about 75 seconds of continuous failure, the error escapes and the service stops visibly instead of appearing to run without a control channel. An accepted request is still served when its replacement instance cannot be created.
 - **Fresh-install folder creation.** The creation path is now covered by isolated tests: the exact service descriptor (`O:BAD:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)`), and creation under a parent that grants the test user inheritable full control, confirming that only the protected SYSTEM/Administrators ACL is applied by the create call. The tests use the current user as owner because a non-elevated test cannot assign Administrators. LocalSystem assigning the Administrators owner at creation, and a first installation on a machine without `%ProgramData%\Tunnela`, remain unverified; see [the focused checks](TESTING.md#after-the-review-fixes).
 - Release build: 0 warnings, 0 errors. 120 isolated tests passed, 0 skipped: 79 Core, 30 Desktop, 11 Service (new `Tunnela.Service.Tests`). The pipe tests passed in eight consecutive runs. 76 isolated installer assertions passed in Windows PowerShell 5.1.
-- No application, installer, Windows service, or VPN was launched. These fixes are not verified on the installed product; see [the focused checks](TESTING.md#after-the-review-fixes). The installer was not rebuilt.
+- No application, installer, Windows service, or VPN was launched. These fixes are not verified on the installed product; see [the focused checks](TESTING.md#after-the-review-fixes). The build script now targets `0.1.0-preview.4` (Windows file version `0.1.0.4`), but that installer has not been built or tested.
 
 ## Readability refactor verification — 0.1.0-preview.3, October 7, 2026
 
