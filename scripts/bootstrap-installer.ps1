@@ -29,12 +29,20 @@ if (-not (Test-Path -LiteralPath $taskArchive) -or (Get-FileHash -LiteralPath $t
     foreach ($taskUrl in $taskUrls) {
         $taskPartial = "$taskArchive.$([guid]::NewGuid().ToString('N')).partial"
         try {
-            Invoke-WebRequest -Uri $taskUrl -OutFile $taskPartial -TimeoutSec 180 -UseBasicParsing
+            # Prefer the native HTTP downloader when available: SourceForge may
+            # return an interstitial instead of ZIP bytes to Windows PowerShell.
+            $taskCurl = Get-Command curl.exe -ErrorAction SilentlyContinue
+            if ($taskCurl) {
+                & $taskCurl.Source --fail --location --silent --show-error --max-time 180 --output $taskPartial $taskUrl
+                if ($LASTEXITCODE -ne 0) { throw "NSIS download failed with curl exit code $LASTEXITCODE." }
+            } else {
+                Invoke-WebRequest -Uri $taskUrl -OutFile $taskPartial -TimeoutSec 180 -UseBasicParsing
+            }
             $taskActualHash = (Get-FileHash -LiteralPath $taskPartial -Algorithm SHA256).Hash
             if ($taskActualHash -ne $taskHash) {
                 # Some SourceForge mirrors return an HTML page with HTTP 200.
                 # Never extract it or accept a different archive hash.
-                Write-Warning "NSIS download from $(([uri]$taskUrl).Host) failed SHA-256 verification."
+                Write-Warning "NSIS download from $(([uri]$taskUrl).Host) failed SHA-256 verification (received $((Get-Item -LiteralPath $taskPartial).Length) bytes, SHA-256 $taskActualHash)."
                 continue
             }
             Move-Item -LiteralPath $taskPartial -Destination $taskArchive -Force
