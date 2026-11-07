@@ -1,16 +1,20 @@
 # Downloads a verified, pinned SDK into this repository. Does not install globally.
 [CmdletBinding()]
-param([string]$Version = '10.0.401')
+param([string]$Version)
 $ErrorActionPreference = 'Stop'
 # Windows PowerShell 5.1 slows large downloads considerably while drawing progress.
 $ProgressPreference = 'SilentlyContinue'
 $taskRoot = Split-Path -Parent $PSScriptRoot
+if (-not $Version) {
+    $Version = (Get-Content -LiteralPath (Join-Path $taskRoot 'global.json') -Raw | ConvertFrom-Json).sdk.version
+}
+if ($Version -notmatch '^10\.0\.[0-9]+$') { throw 'Expected a stable .NET 10 SDK version.' }
 $taskTools = Join-Path $taskRoot '.tools'
 $taskSdkDir = Join-Path $taskTools 'dotnet'
 $taskDotnet = Join-Path $taskSdkDir 'dotnet.exe'
 if ((Test-Path -LiteralPath $taskDotnet) -and (Test-Path -LiteralPath (Join-Path $taskSdkDir "sdk\$Version"))) {
     Write-Host "Project-local .NET SDK $Version is already available."
-    exit 0
+    return
 }
 New-Item -ItemType Directory -Path $taskTools -Force | Out-Null
 $taskMetadata = Invoke-RestMethod -Uri 'https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json' -UseBasicParsing -TimeoutSec 60

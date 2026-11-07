@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$Publish, [switch]$SkipTests)
+param([switch]$Publish, [switch]$SkipTests, [string]$TestResultsDirectory)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 $taskLocalDotnet = Join-Path $taskRoot '.tools\dotnet\dotnet.exe'
@@ -17,7 +17,11 @@ try {
     & $taskDotnet build Tunnela.slnx -c Release --no-restore
     if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
     if (-not $SkipTests) {
-        & $taskDotnet test Tunnela.slnx -c Release --no-build --no-restore
+        $taskTestArguments = @('test', 'Tunnela.slnx', '-c', 'Release', '--no-build', '--no-restore')
+        if ($TestResultsDirectory) {
+            $taskTestArguments += @('--logger', 'trx', '--results-directory', $TestResultsDirectory)
+        }
+        & $taskDotnet @taskTestArguments
         if ($LASTEXITCODE -ne 0) { throw 'Isolated tests failed.' }
     }
     if ($Publish) {

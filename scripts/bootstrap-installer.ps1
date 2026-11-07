@@ -21,15 +21,40 @@ $taskArchive = Join-Path $taskDownloads "nsis-$taskVersion.zip"
 if (-not (Test-Path -LiteralPath $taskArchive) -or (Get-FileHash -LiteralPath $taskArchive -Algorithm SHA256).Hash -ne $taskHash) {
     # Pinned archive from the official NSIS project's SourceForge release.
     # Hash recorded from that HTTPS release download; not a publisher signature.
-    $taskUrl = "https://downloads.sourceforge.net/project/nsis/NSIS%203/$taskVersion/nsis-$taskVersion.zip"
-    $taskPartial = "$taskArchive.$([guid]::NewGuid().ToString('N')).partial"
-    try {
-        Invoke-WebRequest -Uri $taskUrl -OutFile $taskPartial -TimeoutSec 180 -UseBasicParsing
-        if ((Get-FileHash -LiteralPath $taskPartial -Algorithm SHA256).Hash -ne $taskHash) { throw 'Downloaded NSIS archive hash mismatch.' }
-        Move-Item -LiteralPath $taskPartial -Destination $taskArchive -Force
-    } finally {
-        if (Test-Path -LiteralPath $taskPartial) { Remove-Item -LiteralPath $taskPartial }
+    $taskUrls = @(
+        "https://downloads.sourceforge.net/project/nsis/NSIS%203/$taskVersion/nsis-$taskVersion.zip",
+        "https://netix.dl.sourceforge.net/project/nsis/NSIS%203/$taskVersion/nsis-$taskVersion.zip"
+    )
+    $taskDownloaded = $false
+    foreach ($taskUrl in $taskUrls) {
+        $taskPartial = "$taskArchive.$([guid]::NewGuid().ToString('N')).partial"
+        try {
+            # Prefer the native HTTP downloader when available: SourceForge may
+            # return an interstitial instead of ZIP bytes to Windows PowerShell.
+            $taskCurl = Get-Command curl.exe -ErrorAction SilentlyContinue
+            if ($taskCurl) {
+                & $taskCurl.Source --fail --location --silent --show-error --max-time 180 --output $taskPartial $taskUrl
+                if ($LASTEXITCODE -ne 0) { throw "NSIS download failed with curl exit code $LASTEXITCODE." }
+            } else {
+                Invoke-WebRequest -Uri $taskUrl -OutFile $taskPartial -TimeoutSec 180 -UseBasicParsing
+            }
+            $taskActualHash = (Get-FileHash -LiteralPath $taskPartial -Algorithm SHA256).Hash
+            if ($taskActualHash -ne $taskHash) {
+                # Some SourceForge mirrors return an HTML page with HTTP 200.
+                # Never extract it or accept a different archive hash.
+                Write-Warning "NSIS download from $(([uri]$taskUrl).Host) failed SHA-256 verification (received $((Get-Item -LiteralPath $taskPartial).Length) bytes, SHA-256 $taskActualHash)."
+                continue
+            }
+            Move-Item -LiteralPath $taskPartial -Destination $taskArchive -Force
+            $taskDownloaded = $true
+            break
+        } catch {
+            Write-Warning "NSIS download attempt failed: $($_.Exception.Message)"
+        } finally {
+            if (Test-Path -LiteralPath $taskPartial) { Remove-Item -LiteralPath $taskPartial }
+        }
     }
+    if (-not $taskDownloaded) { throw 'No NSIS mirror supplied the pinned archive; nothing was extracted.' }
 }
 if ((Get-FileHash -LiteralPath $taskArchive -Algorithm SHA256).Hash -ne $taskHash) {
     throw 'NSIS archive hash mismatch; nothing was extracted.'

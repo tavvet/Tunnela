@@ -1,0 +1,55 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, test and package (Windows x64)
+    runs-on: windows-2025
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: powershell
+    env:
+      CI: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Bootstrap pinned project-local SDK
+        run: .\scripts\bootstrap-sdk.ps1
+      - name: Build, run isolated tests and compile unsigned installer
+        run: .\scripts\build-installer.ps1 -TestResultsDirectory "$env:GITHUB_WORKSPACE\.artifacts\test-results"
+      - name: Upload test reports even after a failure
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: windows-test-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .artifacts/test-results/*.trx
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload unsigned installer and verification metadata
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: Tunnela-win-x64-${{ github.sha }}
+          path: |
+            .artifacts/installer/*-Setup-x64.exe
+            .artifacts/installer/*-Setup-x64.exe.sha256
+            .artifacts/installer/*-Setup-x64.exe.build.json
+          if-no-files-found: error
+          retention-days: 14

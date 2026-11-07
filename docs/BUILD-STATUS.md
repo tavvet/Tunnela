@@ -2,6 +2,18 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
+## Prerelease preparation — November 7, 2026
+
+- The latest verified source at the time of this update is commit `1ede94de1f17c7217dc0218d1fd6dfa8e070468c` on [PR #1](https://github.com/tavvet/Tunnela/pull/1). The PR is not merged and no GitHub Release has been published. Documentation-only follow-ups do not change application behavior; their CI results must still be checked before publication.
+- Both [push CI](https://github.com/tavvet/Tunnela/actions/runs/42385039971) and [PR CI](https://github.com/tavvet/Tunnela/actions/runs/42385044496) passed on November 7. Release build: 0 warnings/errors; 152 .NET tests passed (79 Core, 62 Desktop, 11 Service), none skipped; 83 isolated installer assertions passed. The unsigned `Tunnela-0.1.0-preview.6-Setup-x64.exe` was compiled and uploaded with SHA-256 and build metadata.
+- The [push-run artifact](https://github.com/tavvet/Tunnela/actions/runs/42385039971/artifacts/13578933079) is tied to the source commit above and expires November 21. PR-run artifacts are built from GitHub's synthetic merge checkout and can have a different SHA in the artifact name. Do not choose release assets solely by filename: repeated builds share the preview.6 name and need not be byte-identical.
+- The owner reports personally testing his build successfully, prolonged operation, and transitions into and out of sleep. This is user-reported manual experience, not an automated test result. The exact tested installer checksum/source revision and the full set of scenarios have not been identified, so the report is not attributed to a specific CI artifact or every item in the test plan.
+- The installer remains unsigned. Windows may show Unknown publisher or SmartScreen warnings. Use at your own risk; a checksum does not independently authenticate the publisher. Existing limitations include no guaranteed persistent kill switch after a crash/service stop, no per-application routing, and no automatic updates, subscriptions or automatic VPN connection.
+- Tag `v0.1.0-preview.6` already points to `32921dd5e018109f1d0b1ae0fd84aed14da9c042`, before the CI/docs PR. Do not move it or mislabel a newer build as that tagged source. A fresh prerelease version is recommended if the release includes the PR.
+- Before publication, obtain the owner's explicit merge/release decision, identify the exact release commit and successful build, and verify that the chosen EXE, checksum and metadata belong together. If claiming manual testing of that exact asset, first identify the owner's tested file or have the owner check the chosen asset. See [draft prerelease notes](RELEASE-NOTES-0.1.0-preview.6.md).
+
+The sections below are historical records of earlier verification. Phrases such as "not built" and "most recently built" describe their dated work, not the latest CI result above. Unresolved scenario limitations remain applicable unless explicitly covered by newer evidence.
+
 ## Engine supervisor robustness — 0.1.0-preview.6, October 27, 2026
 
 - **Engine output.** A failure while handling one output line no longer stops reading stdout, so the engine cannot block on a full pipe. Exit handling now tolerates a failed output reader or an unreadable exit code: cleanup of the runtime files (including the plaintext `active.toml`) is still attempted and the next connect is not blocked. If the deletion itself fails (for example, a locked file), only a warning is logged and the file remains until the next connect overwrites it; this is unchanged.
@@ -41,7 +53,7 @@ Baseline verification date: October 6, 2026. Documentation and language work: Oc
 - Source review compared the refactor with the published baseline, including tray callback scheduling, close guards, property-notification order, and protected file writes. The [source map](ARCHITECTURE.md#reading-the-c-code) explains where to start reading.
 - The application, tray, installed service, and VPN were not launched during this work. The [focused manual regression steps](TESTING.md#after-the-readability-refactor) remain pending for a fresh build. The build script now targets `0.1.0-preview.3` (Windows file version `0.1.0.3`), but that installer has not been built or tested. The existing `0.1.0-preview.2` installer described below was not rebuilt and does not contain this refactor; installer assertions were not rerun because packaging behavior is unchanged.
 
-## Current revision
+## Historical application verification (October 2026)
 
 - The Tunnela product name is applied to the solution, projects, executables, service, IPC, tray, and data directories. The application has its own icon.
 - The compact window layout and fixes that keep hover and focus from changing control geometry are retained.
@@ -56,9 +68,9 @@ Baseline verification date: October 6, 2026. Documentation and language work: Oc
 - A separate drop-down verification build was published at `.artifacts\publish\tunnela\desktop-select-fix\Tunnela.Desktop.exe`. The user confirmed readable drop-down text. This was a manual visual check on their computer; all Windows themes and scaling settings have not been verified separately.
 - The language update uses English by default and offers Russian in Settings, with an immediate switch stored in encrypted user preferences. Existing preferences without a language field default to English. On October 7, 2026, after receiving the language acceptance steps, the user reported that the localized version works. This confirms their basic manual check on their computer, not every language, display, persistence-failure, or connection-state combination. The detailed [language checks](TESTING.md#interface-language) remain available for regression testing.
 
-## EXE installer and pending scenarios
+## Historical installer verification and pending scenarios (October 2026)
 
-- The most recently built installer is `.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe`, containing the language update. It was built on October 7, 2026, and the user subsequently reported that the localized version works. This does not establish that the full installer or network acceptance plan was repeated. The earlier installation results below describe the previously verified `0.1.0-preview.1` baseline; failure and edge-case checks remain pending as listed below.
+- As of October 7, 2026, the most recently built installer was `.artifacts\installer\Tunnela-0.1.0-preview.2-Setup-x64.exe`, containing the language update. It was built on October 7, 2026, and the user subsequently reported that the localized version works. This does not establish that the full installer or network acceptance plan was repeated. The earlier installation results below describe the previously verified `0.1.0-preview.1` baseline; failure and edge-case checks remain pending as listed below.
 - An unsigned `.artifacts\installer\Tunnela-0.1.0-preview.1-Setup-x64.exe` package of approximately 54 MiB was built. It includes freshly published Desktop/Service output, self-contained .NET, TrustTunnel 1.1.7, Wintun 0.14.1, and licenses. NSIS 3.13 is located only in `.tools\nsis-3.13`; no global tool installation was performed.
 - The installer has Russian and English wizard languages, a Start menu shortcut, and uninstallation through Windows Settings. The service uses Automatic startup and waits for a manual connection command. Updates preserve the existing controller SID; the first installation asks the user to confirm their ordinary Windows account.
 - Implemented behavior includes preserving profiles, refusing an active GUI or Tunnela tunnel before stopping the service, protected temporary directories, validating the complete payload, and rolling back files/service settings on failure. Isolation from an existing TrustTunnel client is retained.
