@@ -1,0 +1,170 @@
+name: Publish verified preview.7
+
+on:
+  push:
+    branches: [codex/publish-preview7]
+
+permissions: {}
+
+concurrency:
+  group: publish-tunnela-preview7
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'tavvet/Tunnela' && github.ref == 'refs/heads/codex/publish-preview7'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Verify exact artifact and publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          import zipfile
+          
+          REPO = 'tavvet/Tunnela'
+          COMMIT = '4a1ea1e27327ce4e3ebc71d66d68d740b67ab2d0'
+          TAG = 'v0.1.0-preview.7'
+          RUN = 42386681233
+          ARTIFACT = 13580430156
+          ZIP_SHA = '475db63e54dacd92c3f97875eefadc6424438b65fba40e8d4f91488cb8611386'
+          EXE_SHA = '9531294c8ee4573f7f1e0703b34f8ba825083422830998fddac483ef39459461'
+          NAME = 'Tunnela-0.1.0-preview.7-Setup-x64.exe'
+          FILES = [NAME, NAME + '.sha256', NAME + '.build.json']
+          RELEASE_NOTES = "# Tunnela 0.1.0-preview.7\n\nExperimental Windows x64 prerelease for limited evaluation, not a stable or broadly validated release, of the independent desktop interface for TrustTunnel.\nRequires Windows 10 or later, administrator rights to install the service, and\nyour own TrustTunnel server configuration. The installer includes .NET 10,\nTrustTunnel CLI 1.1.7 and Wintun 0.14.1.\n\n## Changes from preview.6\n\n- Windows CI builds the application, runs isolated tests and compiles the\n  self-contained installer. Test reports, checksums and build metadata are saved.\n- SDK bootstrap reads its pinned version from `global.json`.\n- NSIS download handling tolerates an unavailable mirror while preserving the\n  required archive SHA-256. No hash verification is disabled.\n- English and Russian READMEs explain unsigned-installer warnings and use at\n  your own risk. Build-status documentation separates current and historical\n  verification.\n\nApplication functionality is unchanged from preview.6. This release does not\nclaim new VPN behavior or a migration of existing TrustTunnel installations.\n\n## Important limitations\n\n**Use at your own risk.** The installer has no Authenticode signature. Windows\nmay display **Unknown publisher**, and Microsoft Defender SmartScreen may warn\nabout or block it. A SHA-256 checksum detects changes relative to the recorded\nchecksum; it is not a signature or independent publisher authentication.\n\n- A documented service-crash window between saving the engine ownership record\n  and resuming its main thread may leave a suspended engine process. Automatic\n  resumption is not implemented. This remains unresolved and must be addressed\n  before broad distribution; prolonged ordinary use and sleep transitions do\n  not cover this failure window. See [architecture notes](https://github.com/tavvet/Tunnela/blob/4a1ea1e27327ce4e3ebc71d66d68d740b67ab2d0/docs/ARCHITECTURE.md#state-and-shutdown).\n- The kill switch does not guarantee a persistent network block after a client\n  crash or service stop. Do not rely on this preview for that guarantee.\n- Per-application routing, subscription links, automatic updates and automatic\n  VPN connection at startup are not implemented. Routing rules belong to each\n  profile; shared presets are unavailable.\n- Only one device-wide tunnel is supported. Manually disconnect any other VPN\n  before connecting Tunnela. Concurrent VPN connections are not supported.\n- Full failure recovery, cross-user permissions, route/DNS cleanup and every\n  kill-switch scenario have not been established by automated tests.\n\n## Verification scope\n\nBuilt from commit `4a1ea1e27327ce4e3ebc71d66d68d740b67ab2d0` on GitHub's Windows 2025 runner. [CI run 42386681233](https://github.com/tavvet/Tunnela/actions/runs/42386681233) passed: Release build with **0 warnings and 0 errors**, **152 .NET tests** (79 Core, 62 Desktop, 11 Service; none skipped), **83 isolated installer assertions**, and NSIS installer compilation.\n\nInstaller SHA-256: `9531294c8ee4573f7f1e0703b34f8ba825083422830998fddac483ef39459461`.\nThe EXE was checked against the matching checksum and build metadata before upload. A successful build and isolated tests do not establish real-world installation, UI or VPN safety.\n\nThe owner reports successful personal use, prolonged operation and sleep\ntransitions. The tested installer checksum is unknown; this is not a claim that\nthe exact preview.7 release asset was manually tested or that every scenario in\nthe [manual test plan](https://github.com/tavvet/Tunnela/blob/4a1ea1e27327ce4e3ebc71d66d68d740b67ab2d0/docs/TESTING.md) passed.\n\n## Installation and updates\n\nDownload `Tunnela-0.1.0-preview.7-Setup-x64.exe` together with its matching\n`.sha256` and `.build.json` assets. Verify the checksum before use. Before an\nupdate, disconnect Tunnela and close its interface through the tray. The service\nwaits for a manual connection command. Uninstallation preserves saved profiles.\nExisting TrustTunnel installations are not migrated or removed automatically.\nSee [installation instructions](https://github.com/tavvet/Tunnela/blob/4a1ea1e27327ce4e3ebc71d66d68d740b67ab2d0/docs/INSTALL.md).\n"
+          TOKEN = os.environ['GH_TOKEN']
+          BASE = 'https://api.github.com/repos/' + REPO
+          
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+          
+          api_opener = urllib.request.build_opener(NoRedirect)
+          
+          def request(url, method='GET', data=None, allow_missing=False, content_type='application/json'):
+              # Credentials go only to these two GitHub API hosts, never to storage redirects.
+              parts = urllib.parse.urlsplit(url)
+              if parts.scheme != 'https' or parts.hostname not in ('api.github.com', 'uploads.github.com'):
+                  raise RuntimeError('Unexpected authenticated request destination')
+              payload = json.dumps(data).encode() if isinstance(data, dict) else data
+              req = urllib.request.Request(url, data=payload, method=method, headers={
+                  'Authorization': 'Bearer ' + TOKEN,
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                  'Content-Type': content_type,
+                  'User-Agent': 'Tunnela-verified-prerelease',
+              })
+              try:
+                  return api_opener.open(req, timeout=180)
+              except urllib.error.HTTPError as exc:
+                  if allow_missing and exc.code == 404:
+                      return None
+                  raise
+          
+          def api(path, method='GET', data=None, allow_missing=False):
+              response = request(BASE + path, method, data, allow_missing)
+              if response is None:
+                  return None
+              with response:
+                  return json.load(response)
+          
+          def require(condition, message):
+              if not condition:
+                  raise RuntimeError(message)
+          
+          # Fail closed for existing tags/releases. Reruns must not overwrite or republish.
+          require(api('/git/ref/tags/' + TAG, allow_missing=True) is None, 'Tag already exists; inspect manually')
+          require(api('/releases/tags/' + TAG, allow_missing=True) is None, 'Release already exists; inspect manually')
+          page = 1
+          while True:
+              releases = api('/releases?per_page=100&page=' + str(page))
+              for release in releases:
+                  require(release['tag_name'] != TAG, 'Existing draft or release found; inspect manually')
+              if len(releases) < 100:
+                  break
+              page += 1
+          run = api('/actions/runs/' + str(RUN))
+          require(run['head_sha'] == COMMIT and run['head_branch'] == 'main', 'Unexpected source build')
+          require(run['event'] == 'push' and run['status'] == 'completed' and run['conclusion'] == 'success', 'Source build is not successful')
+          artifact = api('/actions/artifacts/' + str(ARTIFACT))
+          require(not artifact['expired'], 'Artifact expired')
+          require(artifact['workflow_run']['id'] == RUN and artifact['workflow_run']['head_sha'] == COMMIT, 'Artifact provenance mismatch')
+          require(artifact['name'] == 'Tunnela-win-x64-' + COMMIT, 'Artifact name mismatch')
+          require(artifact['digest'] == 'sha256:' + ZIP_SHA, 'Recorded artifact digest mismatch')
+          
+          # The archive endpoint redirects to short-lived storage. Do not forward the token.
+          try:
+              response = request(BASE + '/actions/artifacts/' + str(ARTIFACT) + '/zip')
+          except urllib.error.HTTPError as exc:
+              require(exc.code == 302, 'Archive download did not return its expected redirect')
+              location = exc.headers.get('Location', '')
+              parsed = urllib.parse.urlsplit(location)
+              require(parsed.scheme == 'https' and parsed.hostname and not parsed.username and not parsed.password, 'Invalid archive redirect')
+              response = urllib.request.urlopen(location, timeout=180)
+          with response:
+              archive = response.read(70 * 1024 * 1024)
+          require(hashlib.sha256(archive).hexdigest() == ZIP_SHA, 'Downloaded archive digest mismatch')
+          Path('artifact.zip').write_bytes(archive)
+          with zipfile.ZipFile('artifact.zip') as z:
+              require(len(z.infolist()) == 3 and set(z.namelist()) == set(FILES), 'Unexpected archive contents')
+              for name in FILES:
+                  require(z.getinfo(name).file_size <= 60 * 1024 * 1024, 'Oversized archive member')
+                  Path(name).write_bytes(z.read(name))
+          exe = Path(NAME).read_bytes()
+          require(len(exe) == 56474502 and hashlib.sha256(exe).hexdigest() == EXE_SHA, 'Installer bytes mismatch')
+          checksum = Path(NAME + '.sha256').read_text().split()
+          require(len(checksum) == 2 and checksum[0].lower() == EXE_SHA and checksum[1] == NAME, 'Checksum sidecar mismatch')
+          metadata = json.loads(Path(NAME + '.build.json').read_text(encoding='utf-8-sig'))
+          require(metadata['Version'] == '0.1.0-preview.7' and metadata['Sha256'].lower() == EXE_SHA, 'Build metadata mismatch')
+          require(metadata['SelfContained'] is True and metadata['Signed'] is False and metadata['InstallerExecuted'] is False, 'Unexpected build properties')
+          
+          # No application, installer or downloaded executable is executed.
+          release = api('/releases', 'POST', {
+              'tag_name': TAG, 'target_commitish': COMMIT, 'name': 'Tunnela 0.1.0-preview.7',
+              'body': RELEASE_NOTES, 'draft': True, 'prerelease': True, 'make_latest': 'false',
+          })
+          release_id = release['id']
+          print('Created draft release', release_id, flush=True)
+          uploaded = {}
+          for name in FILES:
+              url = 'https://uploads.github.com/repos/' + REPO + '/releases/' + str(release_id) + '/assets?name=' + urllib.parse.quote(name)
+              with request(url, 'POST', Path(name).read_bytes(), content_type='application/octet-stream') as response:
+                  asset = json.load(response)
+              require(asset['state'] == 'uploaded' and asset['size'] == Path(name).stat().st_size, 'Asset upload verification failed')
+              require(asset.get('digest') == 'sha256:' + hashlib.sha256(Path(name).read_bytes()).hexdigest(), 'Remote asset digest mismatch')
+              uploaded[name] = asset['id']
+          draft = api('/releases/' + str(release_id))
+          require(draft['draft'] and draft['prerelease'] and draft['target_commitish'] == COMMIT, 'Draft release properties mismatch')
+          require(draft['tag_name'] == TAG and draft['name'] == 'Tunnela 0.1.0-preview.7', 'Draft tag/title mismatch')
+          require(len(draft['assets']) == 3 and {a['name'] for a in draft['assets']} == set(FILES), 'Draft asset set mismatch')
+          require(draft['body'] == RELEASE_NOTES, 'Release notes changed')
+          for asset in draft['assets']:
+              name = asset['name']
+              require(asset['id'] == uploaded[name] and asset['state'] == 'uploaded', 'Draft asset identity/state changed')
+              require(asset['size'] == Path(name).stat().st_size and asset.get('digest') == 'sha256:' + hashlib.sha256(Path(name).read_bytes()).hexdigest(), 'Draft asset content changed')
+          # Check tag absence once more immediately before publishing.
+          require(api('/git/ref/tags/' + TAG, allow_missing=True) is None, 'Tag appeared during upload; stop before publication')
+          published = api('/releases/' + str(release_id), 'PATCH', {'draft': False, 'prerelease': True, 'make_latest': 'false', 'tag_name': TAG, 'target_commitish': COMMIT, 'name': 'Tunnela 0.1.0-preview.7', 'body': RELEASE_NOTES})
+          require(not published['draft'] and published['prerelease'] and published['tag_name'] == TAG and published['target_commitish'] == COMMIT, 'Publication status/target mismatch')
+          ref = api('/git/ref/tags/' + TAG)
+          obj = ref['object']
+          for _ in range(5):
+              if obj['type'] == 'commit':
+                  break
+              require(obj['type'] == 'tag', 'Unexpected tag object type')
+              obj = api('/git/tags/' + obj['sha'])['object']
+          require(obj['type'] == 'commit' and obj['sha'] == COMMIT, 'Published tag target mismatch')
+          print('Verified prerelease:', published['html_url'])
+          print('Source:', COMMIT)
+          print('Installer SHA-256:', EXE_SHA)
