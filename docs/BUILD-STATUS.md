@@ -2,11 +2,15 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
-## Preview.7 release candidate — November 7, 2026
+## Published preview.7 — November 7, 2026
 
 The owner approved merging PR #1 and preparing `0.1.0-preview.7`. PR #1 was merged as `f97f07c2cb23b11e9b6862f87fd92ead88c63321` after its final-head Windows checks passed. The package version is now `0.1.0-preview.7` and Windows file version `0.1.0.7`. The existing preview.6 tag remains unchanged. This version change does not alter application behavior.
 
-See [preview.7 release notes](RELEASE-NOTES-0.1.0-preview.7.md). The preview.7 build must pass CI before release assets are selected. The earlier test results below apply to their named commits, not automatically to a new installer. The owner's prolonged-use and sleep-transition report is not tied to a known installer checksum.
+[GitHub prerelease v0.1.0-preview.7](https://github.com/tavvet/Tunnela/releases/tag/v0.1.0-preview.7) is published with the EXE, matching checksum and build metadata. Its tag points to the exact verified source `4a1ea1e27327ce4e3ebc71d66d68d740b67ab2d0`; the existing preview.6 tag is unchanged. [Publication verification](https://github.com/tavvet/Tunnela/actions/runs/42388244057) checked the source build, archive digest, installer hash, asset metadata and final prerelease/tag state. This documentation follow-up does not replace or rebuild those assets.
+
+See [preview.7 release notes](RELEASE-NOTES-0.1.0-preview.7.md). The preview.7 build passed [CI run 42386681233](https://github.com/tavvet/Tunnela/actions/runs/42386681233) on source `4a1ea1e27327ce4e3ebc71d66d68d740b67ab2d0`: 0 build warnings/errors, 152 .NET tests and 83 installer assertions passed, installer compiled. Its EXE SHA-256 is `9531294c8ee4573f7f1e0703b34f8ba825083422830998fddac483ef39459461`, verified against the matching checksum and build metadata. The earlier test results below apply to their named commits, not automatically to a new installer. The owner's prolonged-use and sleep-transition report is not tied to a known installer checksum.
+
+The documented service-crash window between saving engine ownership and resuming its main thread can leave a suspended process; automatic resumption is absent. This remains unresolved before broad distribution. This prerelease is for limited evaluation; ordinary prolonged-use and sleep reports do not cover that failure window. See [architecture](ARCHITECTURE.md#state-and-shutdown).
 
 ## Prerelease preparation snapshot — November 7, 2026
 
