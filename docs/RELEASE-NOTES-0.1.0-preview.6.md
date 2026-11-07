@@ -1,8 +1,16 @@
-# Tunnela 0.1.0-preview.6 — draft prerelease notes
+# Tunnela prerelease — working notes based on preview.6
 
 **Preparation only. This file does not publish or authorize a release.** Confirm
 the final source commit, successful CI run and matching assets before copying
 these notes into a GitHub prerelease. Do not label this as a stable release.
+
+**Version decision pending:** tag `v0.1.0-preview.6` already points to
+`32921dd5e018109f1d0b1ae0fd84aed14da9c042`, before the CI/documentation PR.
+Do not move that tag to the PR head or attach a newer build while claiming it
+came from the tagged source. For a release including the PR, use a fresh version
+(suggested: `0.1.0-preview.7`) after owner confirmation, update package/file
+versions together, and build that exact source. Filenames below describe the
+current preview.6 candidate and must change if a new version is selected.
 
 ## Windows x64 preview
 
@@ -59,8 +67,9 @@ removed automatically. See [installation instructions](INSTALL.md).
 
 ## Publication checklist (remove from published notes)
 
-1. Obtain explicit owner authorization for merging PR #1 and publishing the
-   prerelease. No tag, release or merge has been created by these notes.
+1. Obtain explicit owner authorization for merging PR #1, the release version
+   and publication. Existing preview.6 tag must not be moved. No new tag, release
+   or merge has been created by this preparation.
 2. Select the exact source commit and its successful CI build. Prefer a build of
    the approved final branch commit, not an unidentified PR merge artifact.
 3. Download the EXE, checksum and build metadata from that one build. Verify the
