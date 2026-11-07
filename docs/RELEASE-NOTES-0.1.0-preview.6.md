@@ -1,4 +1,6 @@
-# Tunnela prerelease — working notes based on preview.6
+# Historical prerelease preparation notes based on preview.6
+
+Superseded by [preview.7 release notes](RELEASE-NOTES-0.1.0-preview.7.md). The owner approved merging PR #1 and preparing preview.7 on November 7, 2026. The checklist and pending decisions below record the earlier planning state, not current instructions.
 
 **Preparation only. This file does not publish or authorize a release.** Confirm
 the final source commit, successful CI run and matching assets before copying

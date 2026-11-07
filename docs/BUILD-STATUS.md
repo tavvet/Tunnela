@@ -2,7 +2,13 @@
 
 Baseline verification date: October 6, 2026. Documentation and language work: October 7, 2026. Published target: Windows x64, self-contained .NET 10.
 
-## Prerelease preparation — November 7, 2026
+## Preview.7 release candidate — November 7, 2026
+
+The owner approved merging PR #1 and preparing `0.1.0-preview.7`. PR #1 was merged as `f97f07c2cb23b11e9b6862f87fd92ead88c63321` after its final-head Windows checks passed. The package version is now `0.1.0-preview.7` and Windows file version `0.1.0.7`. The existing preview.6 tag remains unchanged. This version change does not alter application behavior.
+
+See [preview.7 release notes](RELEASE-NOTES-0.1.0-preview.7.md). The preview.7 build must pass CI before release assets are selected. The earlier test results below apply to their named commits, not automatically to a new installer. The owner's prolonged-use and sleep-transition report is not tied to a known installer checksum.
+
+## Prerelease preparation snapshot — November 7, 2026
 
 - The latest verified source at the time of this update is commit `1ede94de1f17c7217dc0218d1fd6dfa8e070468c` on [PR #1](https://github.com/tavvet/Tunnela/pull/1). The PR is not merged and no GitHub Release has been published. Documentation-only follow-ups do not change application behavior; their CI results must still be checked before publication.
 - Both [push CI](https://github.com/tavvet/Tunnela/actions/runs/42385039971) and [PR CI](https://github.com/tavvet/Tunnela/actions/runs/42385044496) passed on November 7. Release build: 0 warnings/errors; 152 .NET tests passed (79 Core, 62 Desktop, 11 Service), none skipped; 83 isolated installer assertions passed. The unsigned `Tunnela-0.1.0-preview.6-Setup-x64.exe` was compiled and uploaded with SHA-256 and build metadata.

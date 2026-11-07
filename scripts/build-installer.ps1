@@ -2,8 +2,8 @@
 param([string]$TestResultsDirectory)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
-$taskVersion = '0.1.0-preview.6'
-$taskFileVersion = '0.1.0.6'
+$taskVersion = '0.1.0-preview.7'
+$taskFileVersion = '0.1.0.7'
 $taskDotnet = Join-Path $taskRoot '.tools\dotnet\dotnet.exe'
 if (-not (Test-Path -LiteralPath $taskDotnet)) { throw 'Run scripts/bootstrap-sdk.ps1 first.' }
 & (Join-Path $PSScriptRoot 'build.ps1') -TestResultsDirectory $TestResultsDirectory
