@@ -6,7 +6,9 @@ A Windows desktop app for connecting to your own [TrustTunnel](https://github.co
 
 Tunnela adds a compact interface, a system tray menu, and a Windows service to the official TrustTunnel CLI. Import a configuration, choose how to route your traffic, and connect. The VPN server and connection credentials are supplied by you.
 
-**Status:** early preview. The installer is currently unsigned. See [verification status](docs/BUILD-STATUS.md) for tested scenarios and remaining limitations.
+**Status:** early preview. See [verification status](docs/BUILD-STATUS.md) for tested scenarios and remaining limitations.
+
+**Use at your own risk.** The installer is unsigned: Windows may show an **Unknown publisher** prompt, and Microsoft Defender SmartScreen may warn about or block it. A SHA-256 checksum verifies file integrity; it does not replace a digital signature or independently verify the publisher.
 
 ## Features
 
