@@ -76,6 +76,8 @@ To build, test, and publish the desktop and service separately:
 
 Outputs are placed in `.artifacts\publish\tunnela\desktop` and `.artifacts\publish\tunnela\service`. These commands do not install the application, start a service, or connect a VPN. Toolchains, dependencies, and build output stay in ignored project directories.
 
+Automated Windows builds and downloadable CI artifacts are described in [CI.md](docs/CI.md).
+
 ## Documentation and project structure
 
 | Location | Contents |

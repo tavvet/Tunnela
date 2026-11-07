@@ -1,18 +1,18 @@
 [CmdletBinding()]
-param()
+param([string]$TestResultsDirectory)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 $taskVersion = '0.1.0-preview.6'
 $taskFileVersion = '0.1.0.6'
 $taskDotnet = Join-Path $taskRoot '.tools\dotnet\dotnet.exe'
 if (-not (Test-Path -LiteralPath $taskDotnet)) { throw 'Run scripts/bootstrap-sdk.ps1 first.' }
-& (Join-Path $PSScriptRoot 'bootstrap-installer.ps1')
-& (Join-Path $PSScriptRoot 'prepare-engine.ps1')
-& (Join-Path $PSScriptRoot 'build.ps1')
+& (Join-Path $PSScriptRoot 'build.ps1') -TestResultsDirectory $TestResultsDirectory
 if (-not $?) { throw 'Build or isolated tests failed.' }
 $taskWindowsPowerShell = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
 & $taskWindowsPowerShell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $taskRoot 'tests\installer-actions.Tests.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Isolated installer checks failed.' }
+& (Join-Path $PSScriptRoot 'bootstrap-installer.ps1')
+& (Join-Path $PSScriptRoot 'prepare-engine.ps1')
 
 # Fresh isolated publishing avoids replacing the user's currently running preview.
 $taskStagingRoot = [IO.Path]::GetFullPath((Join-Path $taskRoot '.artifacts\installer-stage'))
